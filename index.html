@@ -2,7 +2,7 @@
 <html lang="pt-BR"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<script>window.APPV="12/11 22:05 UTC"</script>
+<script>window.APPV="12/11 22:12 UTC"</script>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/icon-32.png">
 <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
@@ -962,7 +962,7 @@ function viewLibDetail(id){
   if(alts.length)h+='<div class="kicker">Alternativas (mesmo músculo principal)</div><div class="sub">Sugestões automáticas por músculo principal, movimento (empurrar ou puxar), tipo (composto ou isolado) e equipamento. Se tiver dúvida de execução ou dor, procure seu instrutor.</div><ul class="list">'+alts.map(libRow).join('')+'</ul>';
   /* adicionar a ficha */
   var fl=Object.keys(fs).map(function(k){return fs[k]}).filter(function(f){return !f.deleted&&f.day!=='sab'});
-  h+='<div class="kicker">Adicionar a uma ficha</div><div class="two"><label class="field">FICHA<select id="l-add">'+fl.map(function(f){return '<option value="'+f.id+'"'+(S.lib.add===f.id?' selected':'')+'>'+esc(f.name)+'</option>'}).join('')+'</select></label><button class="btn pri" data-act="libadd" data-id="'+esc(id)+'" style="align-self:end">Adicionar</button></div>';
+  h+='<div class="kicker">Adicionar a uma ficha</div><div class="two"><label class="field">FICHA<select id="l-add">'+fl.map(function(f){return '<option value="'+f.id+'"'+(S.lib.add===f.id?' selected':'')+'>'+esc(fichaTitle(f))+'</option>'}).join('')+'</select></label><button class="btn pri" data-act="libadd" data-id="'+esc(id)+'" style="align-self:end">Adicionar</button></div>';
   if(!it.cu)h+='';else h+='<div class="acts"><button class="btn sm" data-act="custedit" data-id="'+esc(id)+'">Editar</button></div>';
   h+='</div></div>';
   return h;
@@ -1161,7 +1161,7 @@ function pickPanel(){
   Object.keys(F).filter(function(k){return !F[k].cycle&&!F[k].deleted}).forEach(function(k){list.push(F[k])});
   list.forEach(function(f){
     var on=cur?cur.id===f.id:(!DAYS[dow].off&&f.id===S.week+'_'+DAYS[dow].k);
-    h+='<button class="chip" style="justify-content:space-between;text-align:left;border-radius:10px;min-height:48px;width:100%;display:flex;align-items:center;gap:8px" data-act="pickdo" data-id="'+f.id+'" aria-pressed="'+on+'"><span>'+esc(f.name)+'<br><small style="font-weight:400;opacity:.8">'+esc(f.sub||'')+' · '+f.ex.length+' exerc.</small></span>'+(on?'<span aria-hidden="true">✓</span>':'')+'</button>';
+    h+='<button class="chip" style="justify-content:space-between;text-align:left;border-radius:10px;min-height:48px;width:100%;display:flex;align-items:center;gap:8px" data-act="pickdo" data-id="'+f.id+'" aria-pressed="'+on+'"><span>'+esc(fichaTitle(f))+'<br><small style="font-weight:400;opacity:.8">'+f.ex.length+' exerc.</small></span>'+(on?'<span aria-hidden="true">✓</span>':'')+'</button>';
   });
   if(cur&&!DAYS[dow].off)h+='<button class="btn sm" data-act="pickreset">Voltar ao treino do dia</button>';
   return h+'<button class="btn sm" data-act="pickclose">Fechar</button></div>';
@@ -1192,7 +1192,7 @@ function pastBox(){
   if(!P.fid)P.fid=(pastFichas()[0]||{}).id||'';
   return '<div class="card"><div class="pad"><div class="kicker">Lançar treino antigo</div><div class="sub">Escolha o dia e a ficha. Você registra séries, cargas e repetições como num treino normal, e o treino entra no histórico e nos gráficos na data escolhida.</div>'+
    '<label class="field">DATA DO TREINO<input id="p-date" type="date" max="'+todayIso+'" value="'+esc(P.date)+'"></label>'+
-   '<label class="field">FICHA<select id="p-fid">'+pastFichas().map(function(f){return '<option value="'+f.id+'"'+(P.fid===f.id?' selected':'')+'>'+esc(f.name)+(f.ex.length?'':' (vazia)')+'</option>'}).join('')+'</select></label>'+
+   '<label class="field">FICHA<select id="p-fid">'+pastFichas().map(function(f){return '<option value="'+f.id+'"'+(P.fid===f.id?' selected':'')+'>'+esc(fichaTitle(f))+(f.ex.length?'':' (vazia)')+'</option>'}).join('')+'</select></label>'+
    (P.err?'<div class="note" style="margin:0">'+esc(P.err)+'</div>':'')+
    '<div class="acts"><button class="btn pri" data-act="pgo">Começar lançamento</button><button class="btn" data-act="pclose">Cancelar</button></div></div></div>';
 }
@@ -1437,7 +1437,7 @@ function offDayCard(day){
   var pend=pendList(),h;
   if(pend.length){
     h='<div class="card"><div class="pad"><div class="kicker">'+esc(day.n)+'</div><h2>Repor treino da semana</h2><div class="sub">Estes treinos da semana não foram registrados. Escolha qual fazer hoje.</div>'+
-      pend.map(function(p){return '<button class="btn block" data-act="pendgo" data-id="'+esc(p.f.id)+'" style="text-align:left;display:block"><b>'+esc(fichaTitle(p.f))+'</b><br><small style="font-weight:400;opacity:.8">'+esc(p.d.n)+' · '+(p.mk?'você marcou que não foi':'sem registro')+' · '+p.f.ex.length+' exerc.</small></button>'}).join('')+
+      pend.map(function(p){return '<button class="btn block" data-act="pendgo" data-id="'+esc(p.f.id)+'" style="text-align:left;display:block"><b>'+esc(fichaTitle(p.f))+'</b><br><small style="font-weight:400;opacity:.8">'+(p.mk?'você marcou que não foi':'sem registro')+' · '+p.f.ex.length+' exerc.</small></button>'}).join('')+
       '<button class="btn block" data-act="pickopen">'+(S.pickOpen?'Fechar lista':'Escolher outro treino')+'</button>'+(S.pickOpen?pickPanel():'')+'</div></div>';
   }else{
     h='<div class="card"><div class="empty"><b>Hoje é dia de descanso.</b> Recuperar também faz parte da periodização.</div><div class="pad"><button class="btn block" data-act="pickopen">Treinar mesmo assim</button>'+(S.pickOpen?pickPanel():'')+'</div></div>';
@@ -1559,7 +1559,7 @@ S.pastOpen='';
 function pastList(sel,curId){
   var F=pastFichas();
   return '<div class="pickp"><div class="sub">Escolha o treino que você fez neste dia.</div>'+F.filter(function(f){return f.ex.length}).map(function(f){
-    return '<button class="chip" style="justify-content:space-between;text-align:left;border-radius:10px;min-height:48px;width:100%;display:flex;align-items:center;gap:8px" data-act="start" data-id="'+esc(f.id)+'" data-date="'+sel+'"><span>'+esc(fichaTitle(f))+'<br><small style="font-weight:400;opacity:.8">'+esc(f.name)+' · '+f.ex.length+' exerc.</small></span></button>';
+    return '<button class="chip" style="justify-content:space-between;text-align:left;border-radius:10px;min-height:48px;width:100%;display:flex;align-items:center;gap:8px" data-act="start" data-id="'+esc(f.id)+'" data-date="'+sel+'"><span>'+esc(fichaTitle(f))+'<br><small style="font-weight:400;opacity:.8">'+f.ex.length+' exerc.</small></span></button>';
   }).join('')+'</div>';
 }
 function pastBanner(){
