@@ -1451,6 +1451,8 @@ function offClick(a,b){
 /* ===== ETAPA 14: escolher exercício (busca em português, prévia e confirmação) ===== */
 S.xp=null;
 function xpBase(x){var m=x.lib?{id:x.lib}:libOf(x.name),e=m&&LIBIDX[m.id];return {m:m,b:e?{eq:eqKey(e.eq),fo:e.fo,mc:e.mc}:null}}
+function eqAny(){return Object.keys(S.prof.eq||{}).some(function(k){return S.prof.eq[k]!==false})&&true}
+function eqNone(){var k=Object.keys(S.prof.eq||{});return k.length>0&&k.every(function(q){return S.prof.eq[q]===false})}
 function xpDefault(x,mode){
   var g=exMg(x),B=xpBase(x),b=B.b,m=B.m;
   function sc(o){var s=0;
@@ -1458,13 +1460,15 @@ function xpDefault(x,mode){
     if(mode==='busy'){if(b&&o.eq!==b.eq)s+=1;if(FREEQ[o.eq])s+=1;if(b&&b.eq==='machine'&&o.eq==='machine')s-=3}
     else if(b&&o.eq===b.eq)s+=1;
     return s}
-  return allLib().filter(function(it){return it.pg[0]===g&&(eqOk(it.eq)||it.cu)&&lvOk(it)&&it.n!==x.name&&it.id!==x.lib&&!(m&&it.id===m.id)})
+  var useEq=!eqNone();
+  var pool=allLib().filter(function(it){return it.pg[0]===g&&(!useEq||eqOk(it.eq)||it.cu)&&lvOk(it)&&it.n!==x.name&&it.id!==x.lib&&!(m&&it.id===m.id)});
+  return pool
     .map(function(it){return {it:it,s:sc(it),c:careOf(it).length>0?1:0}})
     .sort(function(a,b2){return (a.c-b2.c)||(b2.s-a.s)||(a.it.n<b2.it.n?-1:a.it.n>b2.it.n?1:0)}).slice(0,8).map(function(o){return o.it});
 }
 function xpSearch(q,x){
-  return allLib().filter(function(it){return (eqOk(it.eq)||it.cu)&&it.n!==x.name&&it.id!==x.lib&&libMatch(it,q)})
-    .map(function(it){return {it:it,c:careOf(it).length>0?1:0}}).sort(function(a,b){return a.c-b.c}).slice(0,20).map(function(o){return o.it});
+  return allLib().filter(function(it){return it.n!==x.name&&it.id!==x.lib&&libMatch(it,q)})
+    .map(function(it){return {it:it,c:(careOf(it).length>0?2:0)+((eqNone()||eqOk(it.eq)||it.cu)?0:1)}}).sort(function(a,b){return a.c-b.c}).slice(0,20).map(function(o){return o.it});
 }
 function xpRow(it,x,act){
   var sel=S.xp.sel===it.id,care=careOf(it),fo=it.e&&it.e.fo?FON[it.e.fo]:'';
