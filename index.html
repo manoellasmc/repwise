@@ -2,7 +2,7 @@
 <html lang="pt-BR"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<script>window.APPV="12/11 22:46 UTC"</script>
+<script>window.APPV="12/11 22:52 UTC"</script>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/icon-32.png">
 <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
@@ -219,6 +219,9 @@ body.act{padding-bottom:100px}
 .bodymap .rg.on{stroke:var(--navy);stroke-width:2.5;stroke-opacity:1;vector-effect:non-scaling-stroke}
 .ul li{margin:2px 0}
 .chip.dash{border-style:dashed;color:var(--muted)}
+
+.balday{font-size:13px;font-weight:600;min-height:40px;border-radius:999px;padding:0 12px;line-height:1.2}
+.pickp+.sub+.balday,.balday{margin:0}
 
 #nav .in{grid-template-columns:repeat(6,1fr)}#nav button{font-size:10px}
 .ex{flex-wrap:wrap}.swap{display:flex;flex-direction:column;gap:6px;padding:4px 0 8px}
@@ -1620,7 +1623,7 @@ function balCard(){
       if(!cs.length){h+='<div class="sub">Nenhum exercício da biblioteca combina com seus equipamentos e cuidados. Ajuste em Perfil.</div></div></div>';return}
       h+='<div class="sub" style="margin:6px 0">1. Escolha o exercício</div><div class="pickp">'+cs.map(function(it){return '<button class="chip" data-act="balsel" data-g="'+g+'" data-id="'+it.id+'" aria-pressed="'+(sel===it.id)+'">'+esc(it.n)+'</button>'}).join('')+'</div>';
       h+='<div class="sub" style="margin:10px 0 6px">2. Onde encaixar (os mais compatíveis primeiro)</div>';
-      rank.forEach(function(r,i){h+='<button class="btn block'+(i===0?' pri':'')+'" data-act="baladd" data-g="'+g+'" data-fid="'+r.p.f.id+'" data-id="'+sel+'">'+(i===0?'Sugerido · ':'')+esc(fichaTitle(r.p.f))+' <small style="opacity:.8">('+r.p.f.ex.length+' exerc.)</small></button>'});
+      rank.forEach(function(r,i){h+='<button class="btn block balday'+(i===0?' pri':'')+'" data-act="baladd" data-g="'+g+'" data-fid="'+r.p.f.id+'" data-id="'+sel+'">'+(i===0?'Sugerido · ':'')+esc(fichaTitle(r.p.f))+' <small style="opacity:.8;font-size:inherit;font-weight:500">('+r.p.f.ex.length+' exerc.)</small></button>'});
       h+='</div></div>';
     });
   }
