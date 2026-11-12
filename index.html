@@ -2,7 +2,7 @@
 <html lang="pt-BR"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<script>window.APPV="12/11 22:27 UTC"</script>
+<script>window.APPV="12/11 22:41 UTC"</script>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/icon-32.png">
 <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
@@ -543,7 +543,7 @@ function viewFichas(){
   if(mine.length){h+='<div class="sec">Minhas fichas</div><div class="flist">';mine.forEach(function(f){h+=frow(f,false)});h+='</div>'}
   h+='<div class="sec">Treinos da semana</div><div class="flist">';
   DAYS.forEach(function(d){if(d.off)return;var f=F[S.week+'_'+d.k];if(f)h+=frow(f,d.k===DAYS[dow].k)});
-  h+='</div><div class="sec">Versão da planilha usada nos treinos</div><div class="chips">'+WEEKS.map(function(w){return '<button class="chip" data-act="week" data-v="'+w.id+'" aria-pressed="'+(S.week===w.id)+'">'+w.l+' · '+w.t+'</button>'}).join('')+'</div><div class="sub">A planilha tem 4 versões de séries, repetições e cargas. Escolha a que serve de base. As cargas do último treino que você fez sempre aparecem como ponto de partida.</div>';
+  h+='</div>';
   return h;
 }
 function frow(f,today){return '<button class="frow'+(today?' today':'')+'" data-act="openficha" data-id="'+f.id+'"><div class="tx"><div class="nm">'+esc(f.name)+'</div><div class="sub">'+esc(f.sub||'')+' · '+f.ex.length+' exerc.'+(f.partial?' · incompleta':'')+'</div></div><span class="ic" aria-hidden="true">›</span></button>'}
