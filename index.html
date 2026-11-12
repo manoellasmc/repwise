@@ -2,7 +2,7 @@
 <html lang="pt-BR"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<script>window.APPV="12/11 22:41 UTC"</script>
+<script>window.APPV="12/11 22:44 UTC"</script>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/icon-32.png">
 <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
@@ -736,7 +736,7 @@ function readInputs(k){var kg=document.querySelector('input[data-f="kg"][data-k=
 document.addEventListener('click',function(ev){
   var b=ev.target.closest('[data-act]');if(!b)return;
   var a=b.dataset.act,id=b.dataset.id;
-  if(libClick(a,b,id,ev)||xpClick(a,b)||mkClick(a,b,id)||tdClick(a,b,id)||pkClick(a,b,id)||skClick(a)||lateClick(a,b)||bkClick(a)||blkClick(a,b)||offClick(a,b)||planClick(a,b)||pastClick(a,b)||paClick(a)||dyClick(a,b))return;
+  if(libClick(a,b,id,ev)||xpClick(a,b)||mkClick(a,b,id)||tdClick(a,b,id)||pkClick(a,b,id)||skClick(a)||lateClick(a,b)||bkClick(a)||blkClick(a,b)||offClick(a,b)||planClick(a,b)||pastClick(a,b)||balClick(a,b)||paClick(a)||dyClick(a,b))return;
   if(a==='view'){S.view=b.dataset.v;S.lib.open=null;S.lib.form=null;S.mk.open=false;S.swap=null;S.ficha=null;S.form=null;S.confirm=null;S.summary=null;hideTip();render();window.scrollTo(0,0)}
   else if(a==='week'){S.week=b.dataset.v;weekTouched=true;saveCfg();render()}
   else if(a==='start'){startWorkout(id,b.dataset.date)}
@@ -1574,6 +1574,62 @@ function pastClick(a,b){
     var A=S.active;if(!A||!A.past)return true;var s=S.ses[A.sid];if(!s||sesDone(A.sid)>0)return true;
     var dt=s.date;delete S.ses[A.sid];delSes(A.sid);
     S.active=null;S.sel=dt;S.view='hoje';S.pastOpen=dt;render();window.scrollTo(0,0);return true;
+  }
+  return false;
+}
+/* ===== ETAPA 16: equilíbrio da semana + sugestão de encaixe ===== */
+S.bal={open:false,sel:{},msg:''};
+var BSYN={peito:['triceps','ombros'],costas:['biceps','antebraco'],ombros:['peito','triceps'],biceps:['costas','antebraco'],triceps:['peito','ombros'],antebraco:['biceps','costas'],abdomen:[],quadriceps:['gluteos','panturrilha','posterior'],posterior:['gluteos','panturrilha','quadriceps'],gluteos:['posterior','quadriceps'],panturrilha:['quadriceps','posterior','gluteos']};
+var BPREF={antebraco:/^rosca de punho (com|sentado)/i};
+var BSMALL={adutores:1,antebraco:1,panturrilha:1,abdomen:1,gluteos:1};
+var BIND={antebraco:'Antebraço já recebe trabalho indireto nos exercícios de costas e bíceps (pegada).'};
+function balDays(){var F=fichas(),o=[];DAYS.forEach(function(d){if(d.off)return;var f=F[S.week+'_'+d.k];if(f&&!f.deleted)o.push(f)});return o}
+function balSets(x){var m=/(\d+)\s*[×xX]/.exec(String(x.sets||''));return m?parseInt(m[1],10):3}
+function balCalc(){
+  var days=balDays(),tot={},per=[];
+  days.forEach(function(f){var g={},n=0;f.ex.forEach(function(x){if(x.chk)return;var m=exMg(x);if(!m)return;n++;if(m==='aerobio')return;g[m]=(g[m]||0)+balSets(x);tot[m]=(tot[m]||0)+balSets(x)});per.push({f:f,g:g,n:n})});
+  return {tot:tot,per:per};
+}
+function balCands(g){
+  var useEq=!eqNone();
+  return allLib().filter(function(it){return it.pg[0]===g&&(!useEq||eqOk(it.eq)||it.cu)&&lvOk(it)&&careOf(it).length===0})
+    .sort(function(a,b){var ia=a.e&&a.e.mc==='isolation'?0:1,ib=b.e&&b.e.mc==='isolation'?0:1;var pr=BPREF[g],pa=pr&&pr.test(a.n)&&!/inversa/i.test(a.n)?0:1,pb=pr&&pr.test(b.n)&&!/inversa/i.test(b.n)?0:1;return (pa-pb)||(ia-ib)||(a.n<b.n?-1:a.n>b.n?1:0)}).slice(0,4);
+}
+function balDayRank(g,per){
+  var syn=BSYN[g]||[];
+  return per.map(function(p){var s=0;syn.forEach(function(k,i){if(p.g[k])s+=(syn.length-i)*10});return {p:p,s:s-p.n}}).sort(function(a,b){return b.s-a.s});
+}
+function balCard(){
+  var c=balCalc(),gaps=[],h='<div class="card"><div class="pad"><div class="kicker">Equilíbrio da semana</div>';
+  h+='<div class="sub" style="margin-bottom:8px">Séries por semana em cada grupo, somando os 5 treinos da planilha. É uma conta simples sobre a sua ficha, não uma prescrição.</div>';
+  MGS.forEach(function(m){var k=m[0];if(k==='aerobio')return;var v=c.tot[k]||0,low=v===0||v<(BSMALL[k]?3:6);if(low)gaps.push(k);
+    h+='<div style="display:flex;align-items:center;gap:8px;margin:5px 0;font-size:13px"><span style="flex:0 0 118px">'+esc(m[1])+'</span><span style="flex:1;height:8px;border-radius:6px;background:var(--line,#2a3558);overflow:hidden"><i style="display:block;height:100%;width:'+Math.min(100,Math.round(v/16*100))+'%;background:var(--accent)"></i></span><span style="flex:0 0 74px;text-align:right;opacity:.85">'+v+' séries'+(v===0?' ⚠':'')+'</span></div>'});
+  if(S.bal.msg)h+='<div class="note" style="margin:8px 0 0">'+esc(S.bal.msg)+'</div>';
+  h+='<button class="btn block" style="margin-top:10px" data-act="balopen">'+(S.bal.open?'Fechar sugestões':(gaps.length?'Ver sugestões de encaixe ('+gaps.length+')':'Ver sugestões'))+'</button>';
+  if(S.bal.open){
+    if(!gaps.length)h+='<div class="sub" style="margin-top:8px">Todos os grupos têm volume na semana. Nada a encaixar por enquanto.</div>';
+    gaps.forEach(function(g){
+      var cs=balCands(g),sel=S.bal.sel[g]||(cs[0]&&cs[0].id),rank=balDayRank(g,c.per).slice(0,3);
+      h+='<div class="card" style="margin:10px 0 0"><div class="pad"><div class="kicker">'+esc(MGN[g])+' · '+((c.tot[g]||0)===0?'sem exercício':'volume baixo')+'</div>';
+      if(BIND[g])h+='<div class="sub">'+esc(BIND[g])+'</div>';
+      if(!cs.length){h+='<div class="sub">Nenhum exercício da biblioteca combina com seus equipamentos e cuidados. Ajuste em Perfil.</div></div></div>';return}
+      h+='<div class="sub" style="margin:6px 0">1. Escolha o exercício</div><div class="pickp">'+cs.map(function(it){return '<button class="chip" data-act="balsel" data-g="'+g+'" data-id="'+it.id+'" aria-pressed="'+(sel===it.id)+'">'+esc(it.n)+'</button>'}).join('')+'</div>';
+      h+='<div class="sub" style="margin:10px 0 6px">2. Onde encaixar (os mais compatíveis primeiro)</div>';
+      rank.forEach(function(r,i){h+='<button class="btn block'+(i===0?' pri':'')+'" data-act="baladd" data-g="'+g+'" data-fid="'+r.p.f.id+'" data-id="'+sel+'">'+(i===0?'Sugerido · ':'')+esc(fichaTitle(r.p.f))+' <small style="opacity:.8">('+r.p.f.ex.length+' exerc.)</small></button>'});
+      h+='</div></div>';
+    });
+  }
+  return h+'</div></div>';
+}
+var _vf16=viewFichas;
+viewFichas=function(){var r=_vf16();if(S.ficha&&fichas()[S.ficha])return r;if(S.mk&&S.mk.open)return r;var i=r.indexOf('</div>');return i<0?r:r.slice(0,i+6)+balCard()+r.slice(i+6)};
+function balClick(a,b){
+  if(a==='balopen'){S.bal.open=!S.bal.open;render();return true}
+  if(a==='balsel'){S.bal.sel[b.dataset.g]=b.dataset.id;render();return true}
+  if(a==='baladd'){
+    var it=allLib().filter(function(o){return o.id===b.dataset.id})[0],fid=b.dataset.fid;if(!it||!fid)return true;
+    editFicha(fid,function(f){f.ex.push({id:'u'+Date.now().toString(36),name:it.n,sets:'3 × 15',load:'',rest:"1'",mg:it.pg[0]||'',lib:it.id})});
+    S.bal.msg=it.n+' entrou em “'+fichaTitle(getFicha(fid))+'” (3 × 15). Ajuste séries e carga na ficha se quiser.';render();return true;
   }
   return false;
 }
