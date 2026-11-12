@@ -2,7 +2,7 @@
 <html lang="pt-BR"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<script>window.APPV="12/11 22:44 UTC"</script>
+<script>window.APPV="12/11 22:46 UTC"</script>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/icon-32.png">
 <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
@@ -225,6 +225,7 @@ body.act{padding-bottom:100px}
 .pickp{display:flex;flex-direction:column;gap:6px}.hero .pickp .chip{background:var(--surface);color:var(--ink)}.hero .pickp .chip[aria-pressed=true]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}.hero .pickp .sub{color:var(--on-navy-mut)}.hero .pickp .btn{color:var(--on-navy)}
 .dots i.sk{opacity:.35;background:repeating-linear-gradient(45deg,var(--muted) 0 2px,transparent 2px 4px)}
 .brand{display:flex;align-items:center;gap:10px;margin:2px 0 0}.brand img{width:40px;height:40px;border-radius:10px;flex:none;box-shadow:0 2px 8px rgba(11,31,75,.25)}.brand span{font-family:var(--display);font-weight:700;font-style:italic;font-size:30px;letter-spacing:.02em;line-height:1;color:var(--ink)}.brand b{color:var(--accent);font-weight:700}
+.hero .pad{gap:10px;padding:14px 16px}.hero h2{font-size:27px;line-height:1.1}.hrow{display:flex;gap:8px}.hrow .btn{min-height:48px;display:flex;align-items:center;justify-content:center;gap:8px}.hrow .btn.pri{flex:1 1 auto}.hrow .btn.ic{flex:0 0 52px;padding:0}.hrow svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.hrow .btn[aria-pressed=true]{border-color:var(--accent)}
 .acts.one{display:flex;flex-wrap:nowrap;gap:6px}.acts.one .btn{flex:1 1 0;min-width:0;min-height:48px;padding:6px 4px;font-size:12px;line-height:1.2;white-space:normal;text-align:center;overflow-wrap:anywhere}
 .blk{border:1px solid var(--line);border-radius:14px;padding:12px;margin:10px 0;display:grid;gap:10px;background:var(--surface)}.blk.done{border-color:var(--accent)}.blk .bt{display:flex;justify-content:space-between;align-items:center;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600;min-height:20px}.blk .bf{display:grid;grid-template-columns:1fr 1fr 1.15fr;gap:8px}.blk label{display:grid;gap:4px;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600;min-width:0}.blk input{text-align:center;font-size:20px;font-weight:600;min-height:52px;font-variant-numeric:tabular-nums;padding:8px 4px}.blk.done input{opacity:.65}.stp{display:grid;grid-template-columns:34px 1fr 34px;align-items:center;border:1px solid var(--line);border-radius:10px;background:var(--bg);min-height:52px;overflow:hidden}.stp b{text-align:center;font-size:20px;color:var(--ink);font-variant-numeric:tabular-nums;letter-spacing:0}.stp button{border:0;background:transparent;color:var(--ink);font-size:20px;min-height:52px;padding:0;cursor:pointer}
 .days .dot.miss{background:transparent;border:2px solid var(--muted);box-sizing:border-box}
@@ -1253,14 +1254,18 @@ function viewHoje(){
     else if(S.off&&S.off[todayIso]&&!todayDone()){h+=offTodayCard()}
     else{
       var f=pk||getFicha(S.week+'_'+day.k),sid=todayIso+'_'+(f&&f.id),ses=S.ses[sid];
-      h+='<div class="card hero"><div class="pad"><div class="kicker" style="color:var(--on-navy-mut)">Treino de hoje</div><h2>'+esc(f?fichaTitle(f):'Sem ficha')+'</h2>';
-      if(f&&f.ex.length){
-        h+='<div class="sub">'+f.ex.length+' exercício'+(f.ex.length===1?'':'s')+(f.cycle?'':(f.sub?' · '+esc(f.sub):''))+'</div>';
-        if(ses&&ses.fin)h+='<button class="btn block" data-act="seesum" data-id="'+sid+'">Treino concluído · ver resumo</button><button class="btn pri block" data-act="start" data-id="'+f.id+'">Refazer ou continuar</button>';
-        else h+='<button class="btn pri block" data-act="start" data-id="'+f.id+'">'+(ses&&sesDone(sid)?'Continuar treino':'Iniciar treino')+'</button>';
-      }else h+='<div class="sub">Esta ficha ainda não tem exercícios. Adicione na aba Fichas.</div><button class="btn block" data-act="openficha" data-id="'+(f?f.id:'')+'">Montar ficha</button>';
-      h+='<button class="btn block" data-act="pickopen">'+(S.pickOpen?'Fechar lista':'Trocar treino')+'</button>'+(S.pickOpen?pickPanel():'');
-      if(f&&f.ex.length&&!(ses&&sesDone(sid)))h+='<button class="btn block" data-act="offmark">Não fui treinar hoje</button>';
+      var n0=f?f.ex.length:0,ic=function(p){return '<svg viewBox="0 0 24 24" aria-hidden="true">'+p+'</svg>'},
+        IPLAY=ic('<path d="M7 4.5v15l12-7.5z" fill="currentColor"/>'),ISWAP=ic('<path d="M4 8h14M14 4l4 4-4 4M20 16H6M10 12l-4 4 4 4"/>'),INOGO=ic('<rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9.5 13.5l5 5M14.5 13.5l-5 5"/>'),ISUM=ic('<path d="M5 12.5l4.5 4.5L19 7.5"/>'),IREDO=ic('<path d="M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7"/>');
+      h+='<div class="card hero"><div class="pad"><div class="kicker" style="color:var(--on-navy-mut)">Treino de hoje'+(n0?' · '+n0+' exerc.':'')+'</div><h2>'+esc(f?fichaTitle(f):'Sem ficha')+'</h2>';
+      if(f&&n0){
+        var fin=ses&&ses.fin,done=f&&!(ses&&sesDone(sid));
+        h+='<div class="hrow">';
+        if(fin)h+='<button class="btn pri" data-act="start" data-id="'+f.id+'" aria-label="Refazer ou continuar o treino">'+IREDO+'<span>Refazer</span></button><button class="btn ic" data-act="seesum" data-id="'+sid+'" aria-label="Ver resumo do treino" title="Ver resumo">'+ISUM+'</button>';
+        else h+='<button class="btn pri" data-act="start" data-id="'+f.id+'" aria-label="'+(ses&&sesDone(sid)?'Continuar treino':'Iniciar treino')+'">'+IPLAY+'<span>'+(ses&&sesDone(sid)?'Continuar':'Iniciar')+'</span></button>';
+        h+='<button class="btn ic" data-act="pickopen" aria-label="'+(S.pickOpen?'Fechar lista':'Trocar treino')+'" title="Trocar treino" aria-pressed="'+(!!S.pickOpen)+'">'+ISWAP+'</button>';
+        if(done)h+='<button class="btn ic" data-act="offmark" aria-label="Não fui treinar hoje" title="Não fui treinar hoje">'+INOGO+'</button>';
+        h+='</div>'+(S.pickOpen?pickPanel():'');
+      }else h+='<div class="sub">Esta ficha ainda não tem exercícios. Adicione na aba Fichas.</div><button class="btn block" data-act="openficha" data-id="'+(f?f.id:'')+'">Montar ficha</button><button class="btn block" data-act="pickopen">'+(S.pickOpen?'Fechar lista':'Trocar treino')+'</button>'+(S.pickOpen?pickPanel():'');
       h+='</div></div>';
       if(f&&f.ex.length)h+=mapCard(groupsOfEx(f.ex),'',itemsOfEx(f.ex));
     }
