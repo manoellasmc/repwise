@@ -528,7 +528,7 @@ function viewHoje(){
     h+='</div><div class="sub">Tracejado: ainda sem treino nesta semana.</div></div></div>';
   }
   var ids=sesIds().filter(function(id){return sesDone(id)>0});
-  if(ids.length){var l=S.ses[ids[0]];h+='<div class="card"><div class="pad"><div class="kicker">Último treino</div><h3 class="big" style="font-size:26px">'+esc(l.fn)+'</h3><div class="sub">'+fmt(l.date,{weekday:'long',day:'numeric',month:'short'})+' · '+sesDone(ids[0])+' exercícios · '+nf(sesVolume(ids[0]))+' kg de volume</div><button class="btn block" data-act="seesum" data-id="'+ids[0]+'">Ver resumo</button></div></div>'}
+  if(ids.length){var l=S.ses[ids[0]];h+='<div class="card"><div class="pad"><div class="kicker">Último treino</div><h3 class="big" style="font-size:26px">'+esc(sesTitle(l))+'</h3><div class="sub">'+fmt(l.date,{weekday:'long',day:'numeric',month:'short'})+' · '+sesDone(ids[0])+' exercícios · '+nf(sesVolume(ids[0]))+' kg de volume</div><button class="btn block" data-act="seesum" data-id="'+ids[0]+'">Ver resumo</button></div></div>'}
   return h;
 }
 
@@ -615,7 +615,7 @@ function viewSummary(){
     var d=lp?v-vol(lp.sets):null;
     rows+='<div class="srow"><span><b>'+esc(e.n)+'</b>'+(pr?'<span class="pr">Recorde de carga</span>':'')+'<br><span class="sub">'+ds.map(function(q){return nf(q.kg)+'×'+q.reps}).join(' · ')+'</span></span><span class="delta '+(d==null?'':d>=0?'up':'dn2')+'">'+(d==null?'novo':(d>=0?'+':'−')+nf(Math.abs(d))+' kg')+'</span></div>';
   });
-  var h='<div class="ahead"><div class="kicker">Resumo do treino</div></div><div class="card"><div class="pad"><h2>'+esc(s.fn)+'</h2><div class="sub">'+fmt(s.date,{weekday:'long',day:'numeric',month:'long'})+'</div>';
+  var h='<div class="ahead"><div class="kicker">Resumo do treino</div></div><div class="card"><div class="pad"><h2>'+esc(sesTitle(s))+'</h2><div class="sub">'+fmt(s.date,{weekday:'long',day:'numeric',month:'long'})+'</div>';
   h+='<div class="stat"><div><b>'+nf(tv)+'</b><span>kg de volume (carga × reps)</span></div><div><b>'+(anyPrev?((tv-pv>=0?'+':'−')+nf(Math.abs(tv-pv))):'—')+'</b><span>kg vs. treino anterior</span></div></div>';
   h+=(prs?'<div class="sub"><b>'+prs+'</b> recorde'+(prs>1?'s':'')+' de carga neste treino.</div>':'')+'</div>'+(rows||'<div class="empty">Nenhuma série foi registrada neste treino.</div>');
   var left=(f?f.ex:[]).filter(function(e){var q=en[e.id];return !(q&&(doneSets(q).length||q.cd))}).map(function(e){return e.name});
@@ -631,7 +631,7 @@ function viewHist0(){
   var h='<div class="hist">';
   ids.forEach(function(id){
     var s=S.ses[id],open=S.openHist===id;
-    h+='<div class="card"><button class="hh" data-act="hopen" data-id="'+id+'" aria-expanded="'+open+'"><h3>'+fmt(s.date,{weekday:'short',day:'numeric',month:'short'})+' · '+esc(s.fn)+'</h3><span class="tag">'+sesDone(id)+' exerc.<br>'+nf(sesVolume(id))+' kg</span></button>';
+    h+='<div class="card"><button class="hh" data-act="hopen" data-id="'+id+'" aria-expanded="'+open+'"><h3>'+fmt(s.date,{weekday:'short',day:'numeric',month:'short'})+' · '+esc(sesTitle(s))+'</h3><span class="tag">'+sesDone(id)+' exerc.<br>'+nf(sesVolume(id))+' kg</span></button>';
     if(open){
       h+='<div class="pad">';var en=s.entries||{};
       Object.keys(en).forEach(function(k){var e=en[k],ds=doneSets(e);if(!ds.length&&!e.cd)return;
@@ -1105,7 +1105,7 @@ function tdForm(x){
 }
 function viewToday(){
   var s=S.ses[S.active.sid],ex=s.ex||getFicha(s.fichaId).ex,T=S.td;
-  var h='<div class="ahead"><button class="btn sm" data-act="tdclose">‹ Voltar ao treino</button></div><div class="card"><div class="pad"><div class="kicker">Treino de hoje</div><h2>'+esc(s.fn)+'</h2><div class="sub">As mudanças valem só para hoje. A ficha original não muda, a não ser que você toque em "Salvar na ficha".</div></div><ul class="list">';
+  var h='<div class="ahead"><button class="btn sm" data-act="tdclose">‹ Voltar ao treino</button></div><div class="card"><div class="pad"><div class="kicker">Treino de hoje</div><h2>'+esc(sesTitle(s))+'</h2><div class="sub">As mudanças valem só para hoje. A ficha original não muda, a não ser que você toque em "Salvar na ficha".</div></div><ul class="list">';
   ex.forEach(function(x,i){
     var logged=!!(s.entries&&s.entries[x.id]&&(doneSets(s.entries[x.id]).length||s.entries[x.id].cd));
     if(T.form&&T.form.id===x.id){h+='<li>'+tdForm(x)+'</li>';return}
@@ -1233,7 +1233,7 @@ function mapCard(groups,title,items){
 function sessDetail(id){
   var s=S.ses[id],en=s.entries||{},sets=0,h='';
   Object.keys(en).forEach(function(k){sets+=doneSets(en[k]).length});
-  h+='<div class="card"><div class="pad"><div class="kicker">Como foi o treino</div><h2>'+esc(s.fn)+'</h2><div class="sub">'+fmt(s.date,{weekday:'long',day:'numeric',month:'long'})+' · '+sesDone(id)+' exerc. · '+sets+' séries · '+nf(sesVolume(id))+' kg de volume</div>';
+  h+='<div class="card"><div class="pad"><div class="kicker">Como foi o treino</div><h2>'+esc(sesTitle(s))+'</h2><div class="sub">'+fmt(s.date,{weekday:'long',day:'numeric',month:'long'})+' · '+sesDone(id)+' exerc. · '+sets+' séries · '+nf(sesVolume(id))+' kg de volume</div>';
   Object.keys(en).forEach(function(k){var e=en[k],ds=doneSets(e);if(!ds.length&&!e.cd)return;
     h+='<div><b>'+esc(e.n)+'</b>'+(ds.length?'<div class="chips" style="margin-top:4px">'+ds.map(function(q){return '<span class="chip st">'+nf(q.kg)+' kg × '+q.reps+'</span>'}).join('')+'</div>':'<div class="sub">'+(e.min?esc(e.min)+' min':'concluído')+'</div>')+(e.note?'<div class="sub">“'+esc(e.note)+'”</div>':'')+'</div>'});
   h+='<div class="acts"><button class="btn sm" data-act="seesum" data-id="'+id+'">Comparar com anterior</button><button class="btn sm" data-act="start" data-id="'+esc(s.fichaId)+'" data-date="'+s.date+'">Continuar/editar</button><button class="btn sm dng" data-act="delses" data-id="'+id+'">'+(S.confirm===id?'Confirmar exclusão':'Excluir treino')+'</button></div></div></div>';
@@ -1287,7 +1287,7 @@ function viewHoje(){
   }
   if(isToday){
     var ids=sesIds().filter(function(id){return sesDone(id)>0&&S.ses[id].date!==todayIso});
-    if(ids.length){var l=S.ses[ids[0]];h+='<div class="card"><div class="pad"><div class="kicker">Último treino</div><h3 class="big" style="font-size:26px">'+esc(l.fn)+'</h3><div class="sub">'+fmt(l.date,{weekday:'long',day:'numeric',month:'long'})+' · '+nf(sesVolume(ids[0]))+' kg de volume</div><button class="btn sm" data-act="selday" data-v="'+l.date+'" '+(function(){var d=fromIso(l.date),m=fromIso(monOf(todayIso));return d>=m?'':'hidden'})()+'>Ver detalhes</button></div></div>'}
+    if(ids.length){var l=S.ses[ids[0]];h+='<div class="card"><div class="pad"><div class="kicker">Último treino</div><h3 class="big" style="font-size:26px">'+esc(sesTitle(l))+'</h3><div class="sub">'+fmt(l.date,{weekday:'long',day:'numeric',month:'long'})+' · '+nf(sesVolume(ids[0]))+' kg de volume</div><button class="btn sm" data-act="selday" data-v="'+l.date+'" '+(function(){var d=fromIso(l.date),m=fromIso(monOf(todayIso));return d>=m?'':'hidden'})()+'>Ver detalhes</button></div></div>'}
   }
   return h;
 }
@@ -1447,6 +1447,12 @@ function offClick(a,b){
   if(a==='offmark'){var d=(b&&b.dataset&&b.dataset.v)||todayIso;if(S.off[d])delete S.off[d];else S.off[d]=true;saveOff();render();return true}
   if(a==='pendgo'){lsSet('pw2-pick',{date:todayIso,id:b.dataset.id});S.pickOpen=false;startWorkout(b.dataset.id);return true}
   return false;
+}
+function sesTitle(s){
+  var en=s.entries||{},gs=[];
+  Object.keys(en).forEach(function(k){var e=en[k];if(!doneSets(e).length)return;var g=e.g||guessMg(e.n);if(g&&g!=='aerobio'&&gs.indexOf(g)<0)gs.push(g)});
+  if(gs.length){var nm=gs.map(function(g){return MGN[g]||g});return nm.length>3?nm.slice(0,3).join(' · ')+' +'+(nm.length-3):nm.join(' · ')}
+  var f=getFicha(s.fichaId);return f?fichaTitle(f):(s.fn||'Treino');
 }
 /* ===== ETAPA 14: escolher exercício (busca em português, prévia e confirmação) ===== */
 S.xp=null;
