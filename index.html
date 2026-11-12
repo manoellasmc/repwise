@@ -735,7 +735,7 @@ function readInputs(k){var kg=document.querySelector('input[data-f="kg"][data-k=
 document.addEventListener('click',function(ev){
   var b=ev.target.closest('[data-act]');if(!b)return;
   var a=b.dataset.act,id=b.dataset.id;
-  if(libClick(a,b,id,ev)||xpClick(a,b)||mkClick(a,b,id)||tdClick(a,b,id)||pkClick(a,b,id)||skClick(a)||lateClick(a,b)||bkClick(a)||blkClick(a,b)||offClick(a,b)||paClick(a)||dyClick(a,b))return;
+  if(libClick(a,b,id,ev)||xpClick(a,b)||mkClick(a,b,id)||tdClick(a,b,id)||pkClick(a,b,id)||skClick(a)||lateClick(a,b)||bkClick(a)||blkClick(a,b)||offClick(a,b)||planClick(a,b)||paClick(a)||dyClick(a,b))return;
   if(a==='view'){S.view=b.dataset.v;S.lib.open=null;S.lib.form=null;S.mk.open=false;S.swap=null;S.ficha=null;S.form=null;S.confirm=null;S.summary=null;hideTip();render();window.scrollTo(0,0)}
   else if(a==='week'){S.week=b.dataset.v;weekTouched=true;saveCfg();render()}
   else if(a==='start'){startWorkout(id,b.dataset.date)}
@@ -1281,8 +1281,11 @@ function viewHoje(){
         h+='<button class="btn block" data-act="pastother" data-v="'+sel+'">Lançar outra ficha neste dia</button>';
         if(pf&&!day.off)h+='<button class="btn block" data-act="offmark" data-v="'+sel+'">'+(S.off&&S.off[sel]?'Desmarcar “não fui”':'Não fui treinar neste dia')+'</button>';
       }
+      if(!past)h+=planUi(sel);
       h+='</div></div>';
-      if(!day.off&&pf&&pf.ex.length)h+=mapCard(groupsOfEx(pf.ex),past?'Músculos previstos':'Músculos do treino',itemsOfEx(pf.ex));
+      var plx=past?null:planOf(sel);
+      if(plx&&plx.ex.length)h+=mapCard(groupsOfEx(plx.ex),'Músculos do treino',itemsOfEx(plx.ex));
+      else if(!day.off&&pf&&pf.ex.length)h+=mapCard(groupsOfEx(pf.ex),past?'Músculos previstos':'Músculos do treino',itemsOfEx(pf.ex));
     }
   }
   if(isToday){
@@ -1339,7 +1342,7 @@ function lateClick(a,b){
 }
 /* ===== ETAPA 11: backup e restauração dos dados ===== */
 S.bk={txt:'',msg:'',conf:false};
-function bkData(){return JSON.stringify({app:'repwise',v:1,at:new Date().toISOString(),ses:S.ses,over:S.over,week:S.week,prof:S.prof,cust:S.cust})}
+function bkData(){return JSON.stringify({app:'repwise',v:1,at:new Date().toISOString(),ses:S.ses,over:S.over,week:S.week,prof:S.prof,cust:S.cust,off:S.off||{},plan:plans()})}
 function backupCard(){
   var B=S.bk,n=Object.keys(S.ses||{}).length;
   return '<div class="card"><div class="pad"><div class="kicker">Seus dados</div><div class="sub">Hoje há '+n+' treino(s) registrado(s) neste aparelho. Use o backup para levar seu histórico para outro endereço ou celular, ou para guardar uma cópia.</div>'+
@@ -1360,7 +1363,7 @@ function bkClick(a){
     try{d=JSON.parse(raw)}catch(e){}
     if(!d||d.app!=='repwise'||!d.ses){S.bk.conf=false;S.bk.msg='Esse texto não parece um backup do RepWise.';render();return true}
     if(!S.bk.conf){S.bk.conf=true;S.bk.msg='Isso substitui os dados deste aparelho por '+Object.keys(d.ses).length+' treino(s) do backup. Toque de novo para confirmar.';render();return true}
-    S.ses=d.ses||{};S.over=d.over||{};S.week=d.week||'s1';S.prof=d.prof||S.prof;S.cust=d.cust||[];
+    S.ses=d.ses||{};S.over=d.over||{};S.week=d.week||'s1';S.prof=d.prof||S.prof;S.cust=d.cust||[];S.off=d.off||{};lsSet('pw2-off',S.off);lsSet('pw2-plan',d.plan||{});saveOff();
     lsSet('pw2-ses',S.ses);Object.keys(S.ses).forEach(function(id){saveSes(id)});saveCfg();savePro();
     S.bk={txt:'',msg:'Backup restaurado.',conf:false};render();return true;
   }
@@ -1516,6 +1519,40 @@ function careNote(x){
   Object.keys(S.over||{}).forEach(function(k){var f=S.over[k];((f&&f.ex)||[]).forEach(function(x){if(map[x.name]){x.name=map[x.name];ch=true}})});
   if(ch){lsSet('pw2-ses',S.ses);saveCfg()}
 })();
+/* ===== ETAPA 15: planejar o treino de um dia futuro (ex.: sábado) ===== */
+S.planOpen='';
+function plans(){return lsGet('pw2-plan')||{}}
+function planOf(date){var id=plans()[date],f=id&&getFicha(id);return f&&!f.deleted?f:null}
+function pickedFicha(){
+  var p=lsGet('pw2-pick');
+  if(p&&p.date===todayIso){var f=getFicha(p.id);if(f&&!f.deleted)return f}
+  return planOf(todayIso);
+}
+function planPanel(sel,pl){
+  var F=fichas(),list=[],seen={};
+  pendList().forEach(function(p){list.push({f:p.f,tag:'da semana, ainda não feito'});seen[p.f.id]=1});
+  DAYS.forEach(function(d){if(d.off)return;var f=F[S.week+'_'+d.k];if(f&&!f.deleted&&!seen[f.id]){list.push({f:f});seen[f.id]=1}});
+  Object.keys(F).filter(function(k){return !F[k].cycle&&!F[k].deleted&&!seen[F[k].id]}).forEach(function(k){list.push({f:F[k]})});
+  return '<div class="pickp"><div class="sub">Escolha o treino que você quer fazer neste dia.</div>'+list.map(function(o){
+    var on=pl&&pl.id===o.f.id;
+    return '<button class="chip" style="justify-content:space-between;text-align:left;border-radius:10px;min-height:48px;width:100%;display:flex;align-items:center;gap:8px" data-act="plando" data-id="'+esc(o.f.id)+'" data-v="'+sel+'" aria-pressed="'+!!on+'"><span>'+esc(fichaTitle(o.f))+'<br><small style="font-weight:400;opacity:.8">'+esc([o.tag,o.f.ex.length+' exerc.'].filter(Boolean).join(' · '))+'</small></span>'+(on?'<span aria-hidden="true">✓</span>':'')+'</button>';
+  }).join('')+'</div>';
+}
+function planUi(sel){
+  var pl=planOf(sel),h='';
+  if(pl)h+='<div class="note" style="margin:0 0 8px"><b>Planejado:</b> '+esc(fichaTitle(pl))+' · '+pl.ex.length+' exercícios. Quando o dia chegar, ele já aparece para iniciar.</div>';
+  h+='<button class="btn block" data-act="planopen" data-v="'+sel+'">'+(S.planOpen===sel?'Fechar lista':(pl?'Trocar treino planejado':'Escolher o treino deste dia'))+'</button>';
+  if(S.planOpen===sel)h+=planPanel(sel,pl);
+  if(pl)h+='<button class="btn block" data-act="plandel" data-v="'+sel+'">Remover plano</button>';
+  return h;
+}
+function planClick(a,b){
+  if(a==='planopen'){S.planOpen=S.planOpen===b.dataset.v?'':b.dataset.v;render();return true}
+  if(a==='plando'){var m=plans();m[b.dataset.v]=b.dataset.id;lsSet('pw2-plan',m);S.planOpen='';render();return true}
+  if(a==='plandel'){var m2=plans();delete m2[b.dataset.v];lsSet('pw2-plan',m2);render();return true}
+  if(a==='pickreset'){var m3=plans();if(m3[todayIso]){delete m3[todayIso];lsSet('pw2-plan',m3)}}
+  return false;
+}
 
 render();
 
