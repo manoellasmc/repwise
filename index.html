@@ -2,6 +2,7 @@
 <html lang="pt-BR"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<script>window.APPV="12/11 22:05 UTC"</script>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/icon-32.png">
 <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
@@ -1345,7 +1346,7 @@ S.bk={txt:'',msg:'',conf:false};
 function bkData(){return JSON.stringify({app:'repwise',v:1,at:new Date().toISOString(),ses:S.ses,over:S.over,week:S.week,prof:S.prof,cust:S.cust,off:S.off||{},plan:plans()})}
 function backupCard(){
   var B=S.bk,n=Object.keys(S.ses||{}).length;
-  return '<div class="card"><div class="pad"><div class="kicker">Seus dados</div><div class="sub">Hoje há '+n+' treino(s) registrado(s) neste aparelho. Use o backup para levar seu histórico para outro endereço ou celular, ou para guardar uma cópia.</div>'+
+  return '<div class="card"><div class="pad"><div class="kicker">Seus dados</div><div class="sub">Versão do app: <b>'+esc(window.APPV||'Claude')+'</b></div><div class="sub">Hoje há '+n+' treino(s) registrado(s) neste aparelho. Use o backup para levar seu histórico para outro endereço ou celular, ou para guardar uma cópia.</div>'+
    '<div class="acts"><button class="btn sm" data-act="bkgen">Gerar backup</button><button class="btn sm'+(B.conf?' dng':'')+'" data-act="bkrestore">'+(B.conf?'Confirmar: substituir dados':'Restaurar do texto')+'</button></div>'+
    '<label class="field">TEXTO DO BACKUP<textarea id="bk-txt" rows="4" placeholder="Toque em Gerar backup para copiar, ou cole aqui um backup para restaurar.">'+esc(B.txt)+'</textarea></label>'+
    (B.msg?'<div class="note" style="margin:0">'+esc(B.msg)+'</div>':'')+'</div></div>';
@@ -1604,5 +1605,5 @@ try{
 })();
 </script>
 
-<script>if('serviceWorker' in navigator&&location.protocol!=='file:'){window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){})})}</script>
+<script>if('serviceWorker' in navigator&&location.protocol!=='file:'){window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).catch(function(){})})}</script>
 </body></html>
