@@ -2,7 +2,7 @@
 <html lang="pt-BR"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<script>window.APPV="12/11 22:12 UTC"</script>
+<script>window.APPV="12/11 22:14 UTC"</script>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/icon-32.png">
 <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
@@ -1275,7 +1275,9 @@ function viewHoje(){
     }else{
       var pf=getFicha(S.week+'_'+day.k),past=sel<todayIso;
       h+='<div class="card"><div class="pad"><div class="kicker">'+esc(lab)+'</div>';
-      if(day.off){h+='<h2>Descanso</h2><div class="sub">'+(past?'Nenhum treino registrado neste dia.':'Dia de descanso na planilha.')+'</div>'}
+      var plF=past?null:planOf(sel);
+      if(plF){h+='<h2>'+esc(fichaTitle(plF))+'</h2><div class="sub">Treino planejado · '+plF.ex.length+' exercícios</div>'}
+      else if(day.off){h+='<h2>Descanso</h2><div class="sub">'+(past?'Nenhum treino registrado neste dia.':'Dia de descanso na planilha.')+'</div>'}
       else if(pf){h+='<h2>'+esc(fichaTitle(pf))+'</h2><div class="sub">'+(past?(S.off&&S.off[sel]?'Você marcou que não foi treinar neste dia.':'Nenhum treino registrado neste dia.'):'Treino previsto · '+pf.ex.length+' exercícios')+'</div>'}
       if(past){
         if(pf&&pf.ex.length&&!day.off)h+='<button class="btn pri block" data-act="start" data-id="'+pf.id+'" data-date="'+sel+'">Lançar o treino de '+day.n+'</button>';
