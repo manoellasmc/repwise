@@ -2,7 +2,7 @@
 <html lang="pt-BR"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<script>window.APPV="12/11 22:58 UTC"</script>
+<script>window.APPV="12/11 23:09 UTC"</script>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/icon-32.png">
 <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
@@ -324,7 +324,7 @@ function schedule(key,fn,ms){
 }
 function saveSes(id){lsSet('pw2-ses',S.ses);if(!dbh)return;schedule('ses:'+id,function(){return dbh.collection('sessions').doc(id).set(clone(S.ses[id]))})}
 function delSes(id){lsSet('pw2-ses',S.ses);if(!dbh)return;schedule('ses:'+id,function(){return dbh.collection('sessions').doc(id).delete()},100)}
-function saveCfg(){lsSet('pw2-over',S.over);lsSet('pw2-week',S.week);if(!dbh)return;schedule('cfg',function(){return dbh.doc('app/config').set({week:S.week,over:clone(S.over),off:clone(S.off||{})})},300)}
+function saveCfg(){lsSet('pw2-over',S.over);lsSet('pw2-week',S.week);if(!dbh)return;schedule('cfg',function(){return dbh.doc('app/config').set({week:S.week,over:clone(S.over),off:clone(S.off||{}),body:clone(S.body||[])})},300)}
 
 function fichas(){var o={},k;for(k in SEED)o[k]=SEED[k];for(k in S.over){if(S.over[k].deleted)delete o[k];else o[k]=S.over[k]}return o}
 function getFicha(id){return fichas()[id]}
@@ -740,7 +740,7 @@ function readInputs(k){var kg=document.querySelector('input[data-f="kg"][data-k=
 document.addEventListener('click',function(ev){
   var b=ev.target.closest('[data-act]');if(!b)return;
   var a=b.dataset.act,id=b.dataset.id;
-  if(libClick(a,b,id,ev)||xpClick(a,b)||mkClick(a,b,id)||tdClick(a,b,id)||pkClick(a,b,id)||skClick(a)||lateClick(a,b)||bkClick(a)||blkClick(a,b)||offClick(a,b)||planClick(a,b)||pastClick(a,b)||balClick(a,b)||paClick(a)||dyClick(a,b))return;
+  if(libClick(a,b,id,ev)||xpClick(a,b)||mkClick(a,b,id)||tdClick(a,b,id)||pkClick(a,b,id)||skClick(a)||lateClick(a,b)||bkClick(a)||blkClick(a,b)||offClick(a,b)||planClick(a,b)||pastClick(a,b)||balClick(a,b)||bdClick(a,b)||paClick(a)||dyClick(a,b))return;
   if(a==='view'){S.view=b.dataset.v;S.lib.open=null;S.lib.form=null;S.mk.open=false;S.swap=null;S.ficha=null;S.form=null;S.confirm=null;S.summary=null;hideTip();render();window.scrollTo(0,0)}
   else if(a==='week'){S.week=b.dataset.v;weekTouched=true;saveCfg();render()}
   else if(a==='start'){startWorkout(id,b.dataset.date)}
@@ -1356,7 +1356,7 @@ function lateClick(a,b){
 }
 /* ===== ETAPA 11: backup e restauração dos dados ===== */
 S.bk={txt:'',msg:'',conf:false};
-function bkData(){return JSON.stringify({app:'repwise',v:1,at:new Date().toISOString(),ses:S.ses,over:S.over,week:S.week,prof:S.prof,cust:S.cust,off:S.off||{},plan:plans()})}
+function bkData(){return JSON.stringify({app:'repwise',v:1,at:new Date().toISOString(),ses:S.ses,over:S.over,week:S.week,prof:S.prof,cust:S.cust,off:S.off||{},plan:plans(),body:S.body||[]})}
 function backupCard(){
   var B=S.bk,n=Object.keys(S.ses||{}).length;
   return '<div class="card"><div class="pad"><div class="kicker">Seus dados</div><div class="sub">Versão do app: <b>'+esc(window.APPV||'Claude')+'</b></div><div class="sub">Hoje há '+n+' treino(s) registrado(s) neste aparelho. Use o backup para levar seu histórico para outro endereço ou celular, ou para guardar uma cópia.</div>'+
@@ -1377,7 +1377,7 @@ function bkClick(a){
     try{d=JSON.parse(raw)}catch(e){}
     if(!d||d.app!=='repwise'||!d.ses){S.bk.conf=false;S.bk.msg='Esse texto não parece um backup do GoManu.';render();return true}
     if(!S.bk.conf){S.bk.conf=true;S.bk.msg='Isso substitui os dados deste aparelho por '+Object.keys(d.ses).length+' treino(s) do backup. Toque de novo para confirmar.';render();return true}
-    S.ses=d.ses||{};S.over=d.over||{};S.week=d.week||'s1';S.prof=d.prof||S.prof;S.cust=d.cust||[];S.off=d.off||{};lsSet('pw2-off',S.off);lsSet('pw2-plan',d.plan||{});saveOff();
+    S.ses=d.ses||{};S.over=d.over||{};S.week=d.week||'s1';S.prof=d.prof||S.prof;S.cust=d.cust||[];S.off=d.off||{};lsSet('pw2-off',S.off);lsSet('pw2-plan',d.plan||{});S.body=d.body||[];lsSet('pw2-body',S.body);saveOff();
     lsSet('pw2-ses',S.ses);Object.keys(S.ses).forEach(function(id){saveSes(id)});saveCfg();savePro();
     S.bk={txt:'',msg:'Backup restaurado.',conf:false};render();return true;
   }
@@ -1645,6 +1645,117 @@ function balClick(a,b){
   }
   return false;
 }
+/* ===== ETAPA 17: composição corporal (balança de bioimpedância / Fitdays) ===== */
+var BDF=[['peso','Peso','kg'],['gord','Gordura corporal','%'],['musc','Massa muscular','kg'],['visc','Gordura visceral',''],['agua','Água','%'],['osso','Massa óssea','kg'],['tmb','Metabolismo basal','kcal'],['idc','Idade corporal','anos'],['imc','IMC','']];
+var BDN={};BDF.forEach(function(f){BDN[f[0]]=f});
+S.body=lsGet('pw2-body')||[];
+S.bd={open:false,form:false,imp:false,metric:'peso',msg:'',conf:null};
+function saveBody(){S.body.sort(function(a,b){return a.id<b.id?-1:a.id>b.id?1:0});lsSet('pw2-body',S.body);saveCfg()}
+function bdNum(v){if(v==null)return null;var s=String(v).replace(/\s/g,'').replace(/[^\d,.\-]/g,'');if(!s)return null;if(s.indexOf(',')>-1&&s.indexOf('.')>-1)s=s.replace(/\./g,'').replace(',','.');else s=s.replace(',','.');var n=parseFloat(s);return isFinite(n)?n:null}
+function bdDate(t){
+  t=String(t||'');var tm=/(\d{1,2}):(\d{2})/.exec(t),time=tm?('0'+tm[1]).slice(-2)+':'+tm[2]:'',y,m,d,r;
+  if(r=/(\d{4})[-\/.](\d{1,2})[-\/.](\d{1,2})/.exec(t)){y=+r[1];m=+r[2];d=+r[3]}
+  else if(r=/(\d{1,2})[-\/.](\d{1,2})[-\/.](\d{4})/.exec(t)){y=+r[3];d=+r[1];m=+r[2];if(m>12&&d<=12){var q=m;m=d;d=q}}
+  else return null;
+  if(m<1||m>12||d<1||d>31)return null;
+  return {d:y+'-'+('0'+m).slice(-2)+'-'+('0'+d).slice(-2),t:time};
+}
+function bdKey(h){
+  h=norm(h);
+  if(/data|date|hora|time|medicao|pesagem/.test(h))return 'date';
+  if(/visceral/.test(h))return 'visc';
+  if(/idade (corporal|metab)|body age|metabolic age/.test(h))return 'idc';
+  if(/imc|bmi/.test(h))return 'imc';
+  if(/muscul|muscle/.test(h)&&!/taxa|rate/.test(h))return 'musc';
+  if(/gordura|fat/.test(h)&&!/subcut|massa livre|free/.test(h))return 'gord';
+  if(/agua|water|hidrat/.test(h))return 'agua';
+  if(/osso|bone/.test(h))return 'osso';
+  if(/tmb|bmr|basal|metabol/.test(h))return 'tmb';
+  if(/^peso|weight/.test(h))return 'peso';
+  return '';
+}
+function bdParse(txt){
+  var lines=String(txt||'').split(/\r?\n/).filter(function(l){return l.trim()});
+  if(lines.length<2)return {err:'Cole o cabeçalho e pelo menos uma linha de medição.'};
+  var del=['\t',';',','].filter(function(c){return lines[0].split(c).length>2})[0];
+  if(!del)return {err:'Não consegui separar as colunas. Cole como veio da planilha ou do arquivo CSV.'};
+  var hd=lines[0].split(del).map(function(x){return x.replace(/^"|"$/g,'').trim()}),map=hd.map(bdKey),ign=hd.filter(function(h,i){return h&&!map[i]});
+  if(map.indexOf('date')<0)return {err:'Não achei a coluna de data. Cabeçalhos lidos: '+hd.join(' | ')};
+  var out=[],bad=0;
+  lines.slice(1).forEach(function(l){
+    var c=l.split(del).map(function(x){return x.replace(/^"|"$/g,'').trim()}),dt=null,e={};
+    map.forEach(function(k,i){if(!k)return;if(k==='date'){var p=bdDate(c[i]);if(p&&(!dt||(!dt.t&&p.t)))dt=p}else{var n=bdNum(c[i]);if(n!=null)e[k]=n}});
+    if(!dt||!Object.keys(e).length){bad++;return}
+    e.id=dt.d+(dt.t?' '+dt.t:'');e.d=dt.d;out.push(e);
+  });
+  return {rows:out,bad:bad,ign:ign};
+}
+function bdMerge(rows){
+  var n=0,u=0;rows.forEach(function(r){var i=S.body.findIndex(function(b){return b.id===r.id});if(i>=0){S.body[i]=Object.assign({},S.body[i],r);u++}else{S.body.push(r);n++}});
+  saveBody();return {n:n,u:u};
+}
+function bdFmt(v,k){var f=BDN[k];return (Math.round(v*10)/10).toString().replace('.',',')+(f&&f[2]?' '+f[2]:'')}
+function bdSeries(k){return S.body.filter(function(b){return b[k]!=null}).map(function(b){return {d:b.d,id:b.id,v:b[k]}})}
+function bdChart(k){
+  var s=bdSeries(k);if(s.length<2)return '<div class="sub">Precisa de pelo menos 2 medições de '+esc(BDN[k][1].toLowerCase())+' para mostrar o gráfico.</div>';
+  var W=320,H=130,P=26,mn=Math.min.apply(null,s.map(function(p){return p.v})),mx=Math.max.apply(null,s.map(function(p){return p.v}));if(mn===mx){mn-=1;mx+=1}
+  var t0=new Date(s[0].d).getTime(),t1=new Date(s[s.length-1].d).getTime()||t0+1;if(t1===t0)t1=t0+1;
+  var pts=s.map(function(p){var x=P+(new Date(p.d).getTime()-t0)/(t1-t0)*(W-2*P),y=H-P-(p.v-mn)/(mx-mn)*(H-2*P);return [x,y,p]});
+  var fd=function(d){return d.slice(8)+'/'+d.slice(5,7)};
+  return '<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto" role="img" aria-label="Gráfico de '+esc(BDN[k][1])+'"><polyline fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linejoin="round" points="'+pts.map(function(p){return p[0].toFixed(1)+','+p[1].toFixed(1)}).join(' ')+'"/>'+
+    pts.map(function(p){return '<circle cx="'+p[0].toFixed(1)+'" cy="'+p[1].toFixed(1)+'" r="3.5" fill="var(--accent)" stroke="var(--surface)" stroke-width="2"/>'}).join('')+
+    '<text x="'+P+'" y="12" font-size="11" fill="var(--muted)">'+bdFmt(mx,k)+'</text><text x="'+P+'" y="'+(H-12)+'" font-size="11" fill="var(--muted)">'+bdFmt(mn,k)+'</text>'+
+    '<text x="'+P+'" y="'+(H-1)+'" font-size="10" fill="var(--muted)">'+fd(s[0].d)+'</text><text x="'+(W-P)+'" y="'+(H-1)+'" font-size="10" text-anchor="end" fill="var(--muted)">'+fd(s[s.length-1].d)+'</text></svg>';
+}
+function bodyCard(){
+  var h='<div class="card"><div class="pad cmp"><div class="kicker">Composição corporal</div>',B=S.body,bd=S.bd;
+  if(bd.msg)h+='<div class="note" style="margin:0">'+esc(bd.msg)+'</div>';
+  if(!B.length){h+='<div class="sub">Registre suas medições da balança (Fitdays ou outra). O app guarda o histórico e mostra a evolução. Os números vêm só do que você lança ou importa.</div>'}
+  else{
+    var have=BDF.filter(function(f){return bdSeries(f[0]).length});
+    h+='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(104px,1fr));gap:8px">'+have.slice(0,6).map(function(f){var s=bdSeries(f[0]),l=s[s.length-1],pv=s.length>1?s[s.length-2]:null,dl=pv?l.v-pv.v:null;
+      return '<div style="border:1px solid var(--line);border-radius:12px;padding:8px 10px"><div style="font-size:11px;color:var(--muted)">'+esc(f[1])+'</div><div style="font-size:18px;font-weight:700">'+bdFmt(l.v,f[0])+'</div><div style="font-size:11px;color:var(--muted)">'+(dl==null?l.d.slice(8)+'/'+l.d.slice(5,7):(dl>0?'+':'')+(Math.round(dl*10)/10).toString().replace('.',',')+' desde a anterior')+'</div></div>'}).join('')+'</div>';
+    h+='<div class="chips">'+have.map(function(f){return '<button class="chip" data-act="bdmet" data-v="'+f[0]+'" aria-pressed="'+(bd.metric===f[0])+'">'+esc(f[1])+'</button>'}).join('')+'</div>';
+    if(BDN[bd.metric]&&bdSeries(bd.metric).length)h+=bdChart(bd.metric);
+  }
+  h+='<div class="hrow"><button class="btn pri" data-act="bdform"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>'+(bd.form?'Fechar':'Nova medição')+'</span></button><button class="btn" style="flex:1" data-act="bdimp"><span>'+(bd.imp?'Fechar':'Importar')+'</span></button></div>';
+  if(bd.form){
+    h+='<div class="form"><label class="field">DATA<input id="bd-d" type="date" value="'+todayIso+'"></label><div class="two" style="display:grid;grid-template-columns:1fr 1fr;gap:8px">'+BDF.map(function(f){return '<label class="field">'+esc(f[1]).toUpperCase()+(f[2]?' ('+f[2]+')':'')+'<input id="bd-'+f[0]+'" inputmode="decimal" placeholder="—"></label>'}).join('')+'</div><div class="sub">Preencha só o que a balança mostrou.</div><button class="btn pri block" data-act="bdsave">Salvar medição</button></div>';
+  }
+  if(bd.imp){
+    h+='<div class="form"><div class="sub">No Fitdays, exporte o histórico (se o seu app tiver “exportar dados”) e cole aqui o conteúdo, com o cabeçalho na primeira linha. Também funciona copiar as linhas de uma planilha. O app procura colunas como data, peso, gordura, músculo, água, osso, visceral, TMB e IMC.</div><textarea id="bd-txt" rows="6" placeholder="Data;Peso (kg);Gordura corporal (%);..."></textarea><button class="btn pri block" data-act="bdgo">Importar</button></div>';
+  }
+  if(B.length){
+    h+='<div class="kicker" style="margin-top:6px">Histórico</div><ul class="list">'+B.slice().reverse().slice(0,12).map(function(b){
+      var bits=BDF.filter(function(f){return b[f[0]]!=null}).slice(0,4).map(function(f){return esc(f[1].split(' ')[0])+' '+bdFmt(b[f[0]],f[0])}).join(' · ');
+      return '<li style="display:flex;align-items:center;gap:8px;justify-content:space-between;padding:6px 0"><span style="font-size:13px"><b>'+b.d.slice(8)+'/'+b.d.slice(5,7)+'/'+b.d.slice(0,4)+(b.id.length>10?' '+b.id.slice(11):'')+'</b><br><span style="color:var(--muted)">'+bits+'</span></span><button class="btn sm" data-act="bddel" data-id="'+esc(b.id)+'" aria-label="Apagar medição">'+(bd.conf===b.id?'Apagar?':'×')+'</button></li>'}).join('')+'</ul>';
+  }
+  return h+'</div></div>';
+}
+var _ve17=viewEvo;viewEvo=function(){return _ve17()+bodyCard()};
+function bdClick(a,b){
+  var bd=S.bd;
+  if(a==='bdform'){bd.form=!bd.form;bd.imp=false;bd.msg='';render();return true}
+  if(a==='bdimp'){bd.imp=!bd.imp;bd.form=false;bd.msg='';render();return true}
+  if(a==='bdmet'){bd.metric=b.dataset.v;render();return true}
+  if(a==='bdsave'){
+    var d=($('#bd-d')||{}).value||todayIso,e={id:d,d:d},any=0;
+    BDF.forEach(function(f){var n=bdNum(($('#bd-'+f[0])||{}).value);if(n!=null){e[f[0]]=n;any=1}});
+    if(!any){bd.msg='Preencha pelo menos um valor.';render();return true}
+    bdMerge([e]);bd.form=false;bd.msg='Medição de '+d.slice(8)+'/'+d.slice(5,7)+' salva.';render();return true;
+  }
+  if(a==='bdgo'){
+    var r=bdParse(($('#bd-txt')||{}).value);
+    if(r.err){bd.msg=r.err;render();return true}
+    if(!r.rows.length){bd.msg='Nenhuma linha com data e valores foi reconhecida.'+(r.ign.length?' Colunas não reconhecidas: '+r.ign.join(', ')+'.':'');render();return true}
+    var m=bdMerge(r.rows);bd.imp=false;bd.msg=m.n+' medição(ões) nova(s), '+m.u+' atualizada(s)'+(r.bad?', '+r.bad+' linha(s) ignorada(s)':'')+'.'+(r.ign.length?' Colunas não usadas: '+r.ign.join(', ')+'.':'');render();return true;
+  }
+  if(a==='bddel'){
+    if(bd.conf!==b.dataset.id){bd.conf=b.dataset.id;render();return true}
+    S.body=S.body.filter(function(x){return x.id!==b.dataset.id});bd.conf=null;saveBody();render();return true;
+  }
+  return false;
+}
 
 render();
 
@@ -1660,7 +1771,7 @@ try{
       },function(){S.sync='error';foot()});
       db.doc('app/config').onSnapshot(function(s){
         if(pend.cfg||!s.exists)return;var d=s.data()||{};
-        S.over=d.over?clone(d.over):{};S.off=d.off?clone(d.off):{};lsSet('pw2-off',S.off);if(d.week&&!weekTouched)S.week=d.week;
+        S.over=d.over?clone(d.over):{};S.off=d.off?clone(d.off):{};lsSet('pw2-off',S.off);if(d.body){S.body=clone(d.body);lsSet('pw2-body',S.body)}if(d.week&&!weekTouched)S.week=d.week;
         lsSet('pw2-over',S.over);lsSet('pw2-week',S.week);if(!S.active)refresh();
       },function(){});
       db.doc('app/profile').onSnapshot(function(s){
