@@ -2,7 +2,7 @@
 <html lang="pt-BR"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<script>window.APPV="13/11 16:30 UTC"</script>
+<script>window.APPV="19/11 16:15 UTC"</script>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/icon-32.png">
 <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
@@ -324,7 +324,7 @@ function schedule(key,fn,ms){
 }
 function saveSes(id){lsSet('pw2-ses',S.ses);if(!dbh)return;schedule('ses:'+id,function(){return dbh.collection('sessions').doc(id).set(clone(S.ses[id]))})}
 function delSes(id){lsSet('pw2-ses',S.ses);if(!dbh)return;schedule('ses:'+id,function(){return dbh.collection('sessions').doc(id).delete()},100)}
-function saveCfg(){lsSet('pw2-over',S.over);lsSet('pw2-week',S.week);if(!dbh)return;schedule('cfg',function(){return dbh.doc('app/config').set({week:S.week,over:clone(S.over),off:clone(S.off||{}),body:clone(S.body||[])})},300)}
+function saveCfg(){lsSet('pw2-over',S.over);lsSet('pw2-week',S.week);if(!dbh)return;schedule('cfg',function(){return dbh.doc('app/config').set({week:S.week,over:clone(S.over),off:clone(S.off||{}),body:clone(S.body||[]),fat:clone(S.fat||{})})},300)}
 
 function fichas(){var o={},k;for(k in SEED)o[k]=SEED[k];for(k in S.over){if(S.over[k].deleted)delete o[k];else o[k]=S.over[k]}return o}
 function getFicha(id){return fichas()[id]}
@@ -367,7 +367,7 @@ function lastOf(name,exceptSid){
     for(var k in en){if(en[k].n===name){var ds=doneSets(en[k]);if(ds.length)return {sid:ids[i],date:S.ses[ids[i]].date,sets:ds}}}
   }return null;
 }
-function vol(sets){return sets.reduce(function(a,s){return a+s.kg*s.reps},0)}
+function vol(sets){return sets.reduce(function(a,s){return a+s.kg*s.reps*(s.m||1)},0)}
 function maxKg(sets){return sets.reduce(function(a,s){return Math.max(a,s.kg)},0)}
 function prevMaxKg(name,exceptSid){var m=0;var cut=exceptSid&&S.ses[exceptSid]&&S.ses[exceptSid].date;sesIds().forEach(function(id){if(id===exceptSid||(cut&&S.ses[id].date>cut))return;var en=S.ses[id].entries||{};for(var k in en){if(en[k].n===name)m=Math.max(m,maxKg(working(doneSets(en[k]))))}});return m}
 function sesVolume(id){var t=0,en=S.ses[id].entries||{};for(var k in en)t+=vol(doneSets(en[k]));return t}
@@ -740,7 +740,7 @@ function readInputs(k){var kg=document.querySelector('input[data-f="kg"][data-k=
 document.addEventListener('click',function(ev){
   var b=ev.target.closest('[data-act]');if(!b)return;
   var a=b.dataset.act,id=b.dataset.id;
-  if(libClick(a,b,id,ev)||xpClick(a,b)||mkClick(a,b,id)||tdClick(a,b,id)||pkClick(a,b,id)||skClick(a)||lateClick(a,b)||bkClick(a)||blkClick(a,b)||offClick(a,b)||planClick(a,b)||pastClick(a,b)||balClick(a,b)||bdClick(a,b)||cdClick(a,b)||paClick(a)||dyClick(a,b))return;
+  if(libClick(a,b,id,ev)||xpClick(a,b)||mkClick(a,b,id)||tdClick(a,b,id)||pkClick(a,b,id)||skClick(a)||lateClick(a,b)||bkClick(a)||blkClick(a,b)||offClick(a,b)||planClick(a,b)||pastClick(a,b)||balClick(a,b)||bdClick(a,b)||cdClick(a,b)||fatClick(a,b)||paClick(a)||dyClick(a,b))return;
   if(a==='view'){S.view=b.dataset.v;S.lib.open=null;S.lib.form=null;S.mk.open=false;S.swap=null;S.ficha=null;S.form=null;S.confirm=null;S.summary=null;hideTip();render();window.scrollTo(0,0)}
   else if(a==='week'){S.week=b.dataset.v;weekTouched=true;saveCfg();render()}
   else if(a==='start'){startWorkout(id,b.dataset.date)}
@@ -1259,7 +1259,7 @@ function viewHoje(){
       var f=pk||getFicha(S.week+'_'+day.k),sid=todayIso+'_'+(f&&f.id),ses=S.ses[sid];
       var n0=f?f.ex.length:0,ic=function(p){return '<svg viewBox="0 0 24 24" aria-hidden="true">'+p+'</svg>'},
         IPLAY=ic('<path d="M7 4.5v15l12-7.5z" fill="currentColor"/>'),ISWAP=ic('<path d="M4 8h14M14 4l4 4-4 4M20 16H6M10 12l-4 4 4 4"/>'),INOGO=ic('<rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9.5 13.5l5 5M14.5 13.5l-5 5"/>'),ISUM=ic('<path d="M5 12.5l4.5 4.5L19 7.5"/>'),IREDO=ic('<path d="M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7"/>');
-      h+='<div class="card hero"><div class="pad"><div class="kicker" style="color:var(--on-navy-mut)">Treino de hoje'+(n0?' · '+n0+' exerc.':'')+'</div><h2>'+esc(f?fichaTitle(f):'Sem ficha')+'</h2>';
+      h+='<div class="card hero"><div class="pad"><div class="kicker" style="color:var(--on-navy-mut)">Treino de hoje'+(n0?' · '+n0+' exerc.':'')+(f?kcTag(f):'')+'</div><h2>'+esc(f?fichaTitle(f):'Sem ficha')+'</h2>';
       if(f&&n0){
         var fin=ses&&ses.fin,done=f&&!(ses&&sesDone(sid));
         h+='<div class="hrow">';
@@ -1356,7 +1356,7 @@ function lateClick(a,b){
 }
 /* ===== ETAPA 11: backup e restauração dos dados ===== */
 S.bk={txt:'',msg:'',conf:false};
-function bkData(){return JSON.stringify({app:'repwise',v:1,at:new Date().toISOString(),ses:S.ses,over:S.over,week:S.week,prof:S.prof,cust:S.cust,off:S.off||{},plan:plans(),body:S.body||[]})}
+function bkData(){return JSON.stringify({app:'repwise',v:1,at:new Date().toISOString(),ses:S.ses,over:S.over,week:S.week,prof:S.prof,cust:S.cust,off:S.off||{},plan:plans(),body:S.body||[],fat:S.fat||{}})}
 function backupCard(){
   var B=S.bk,n=Object.keys(S.ses||{}).length;
   return '<div class="card"><div class="pad"><div class="kicker">Seus dados</div><div class="sub">Versão do app: <b>'+esc(window.APPV||'Claude')+'</b></div><div class="sub">Hoje há '+n+' treino(s) registrado(s) neste aparelho. Use o backup para levar seu histórico para outro endereço ou celular, ou para guardar uma cópia.</div>'+
@@ -1377,7 +1377,7 @@ function bkClick(a){
     try{d=JSON.parse(raw)}catch(e){}
     if(!d||d.app!=='repwise'||!d.ses){S.bk.conf=false;S.bk.msg='Esse texto não parece um backup do GoManu.';render();return true}
     if(!S.bk.conf){S.bk.conf=true;S.bk.msg='Isso substitui os dados deste aparelho por '+Object.keys(d.ses).length+' treino(s) do backup. Toque de novo para confirmar.';render();return true}
-    S.ses=d.ses||{};S.over=d.over||{};S.week=d.week||'s1';S.prof=d.prof||S.prof;S.cust=d.cust||[];S.off=d.off||{};lsSet('pw2-off',S.off);lsSet('pw2-plan',d.plan||{});S.body=d.body||[];lsSet('pw2-body',S.body);saveOff();
+    S.ses=d.ses||{};S.over=d.over||{};S.week=d.week||'s1';S.prof=d.prof||S.prof;S.cust=d.cust||[];S.off=d.off||{};lsSet('pw2-off',S.off);lsSet('pw2-plan',d.plan||{});S.body=d.body||[];lsSet('pw2-body',S.body);if(d.fat){S.fat=Object.assign(S.fat||{},d.fat);lsSet('pw2-fat',S.fat)}saveOff();
     lsSet('pw2-ses',S.ses);Object.keys(S.ses).forEach(function(id){saveSes(id)});saveCfg();savePro();
     S.bk={txt:'',msg:'Backup restaurado.',conf:false};render();return true;
   }
@@ -1646,7 +1646,7 @@ function balClick(a,b){
   return false;
 }
 /* ===== ETAPA 17: composição corporal (balança de bioimpedância / Fitdays) ===== */
-var BDF=[['peso','Peso','kg'],['gord','Gordura corporal','%'],['musc','Massa muscular','kg'],['visc','Gordura visceral',''],['agua','Água','%'],['osso','Massa óssea','kg'],['tmb','Metabolismo basal','kcal'],['idc','Idade corporal','anos'],['imc','IMC','']];
+var BDF=[['peso','Peso','kg'],['gord','Gordura corporal','%'],['musc','Massa muscular','kg'],['visc','Gordura visceral',''],['agua','Água','%'],['osso','Massa óssea','kg'],['tmb','Metabolismo basal','kcal'],['idc','Idade corporal','anos'],['imc','IMC',''],['mgord','Massa gorda','kg'],['tmus','Taxa muscular','%'],['mesq','Músculo esquelético','%'],['prot','Proteína','%'],['gsub','Gordura subcutânea','%'],['mlg','Peso sem gordura','kg']];
 var BDN={};BDF.forEach(function(f){BDN[f[0]]=f});
 S.body=lsGet('pw2-body')||[];
 S.bd={open:false,form:false,imp:false,metric:'peso',msg:'',conf:null};
@@ -1662,6 +1662,13 @@ function bdDate(t){
 }
 function bdKey(h){
   h=norm(h);
+  if(/massa gorda|fat mass/.test(h))return 'mgord';
+  if(/taxa muscular|muscle rate|muscle ratio/.test(h))return 'tmus';
+  if(/esquel|skeletal/.test(h))return 'mesq';
+  if(/subcut/.test(h))return 'gsub';
+  if(/sem gordura|livre de gordura|lean body|fat.?free|massa magra/.test(h))return 'mlg';
+  if(/^peso (da agua|corpor)|^massa prote/.test(h))return '';
+  if(/^proteina|^protein/.test(h))return 'prot';
   if(/data|date|hora|time|medicao|pesagem/.test(h))return 'date';
   if(/visceral/.test(h))return 'visc';
   if(/idade (corporal|metab)|body age|metabolic age/.test(h))return 'idc';
@@ -1718,9 +1725,9 @@ function bodyCard(){
     h+='<div class="chips">'+have.map(function(f){return '<button class="chip" data-act="bdmet" data-v="'+f[0]+'" aria-pressed="'+(bd.metric===f[0])+'">'+esc(f[1])+'</button>'}).join('')+'</div>';
     if(BDN[bd.metric]&&bdSeries(bd.metric).length)h+=bdChart(bd.metric);
   }
-  h+='<div class="hrow"><button class="btn pri" data-act="bdform"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>'+(bd.form?'Fechar':'Nova medição')+'</span></button><button class="btn" style="flex:1" data-act="bdimp"><span>'+(bd.imp?'Fechar':'Importar')+'</span></button></div>';
+  h+='<div class="hrow"><button class="btn pri" data-act="bdform"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>'+(bd.form?'Fechar':'Nova medição')+'</span></button><button class="btn" style="flex:1" data-act="bdimp"><span>'+(bd.imp?'Fechar':'Importar')+'</span></button><button class="btn ic" data-act="bdphoto" aria-label="Ler foto da balança" title="Ler foto da balança"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg></button></div><input type="file" id="bd-file" accept="image/*" hidden>'+(bd.busy?'<div class="note" id="bd-busy" style="margin:0">'+esc(bd.busy)+'</div>':'');
   if(bd.form){
-    h+='<div class="form"><label class="field">DATA<input id="bd-d" type="date" value="'+todayIso+'"></label><div class="two" style="display:grid;grid-template-columns:1fr 1fr;gap:8px">'+BDF.map(function(f){return '<label class="field">'+esc(f[1]).toUpperCase()+(f[2]?' ('+f[2]+')':'')+'<input id="bd-'+f[0]+'" inputmode="decimal" placeholder="—"></label>'}).join('')+'</div><div class="sub">Preencha só o que a balança mostrou.</div><button class="btn pri block" data-act="bdsave">Salvar medição</button></div>';
+    h+='<div class="form">'+(bd.img?'<img src="'+bd.img+'" alt="Foto da medição" style="max-height:260px;object-fit:contain;border-radius:12px;border:1px solid var(--line)"><div class="sub">Confira cada valor com a foto. '+(Object.keys(bd.flag||{}).length?'Os campos com borda laranja foram lidos com baixa confiança ou não batem com os outros números.':'')+'</div>':'')+'<label class="field">DATA<input id="bd-d" type="date" value="'+(bd.preDate||todayIso)+'"></label><div class="two" style="display:grid;grid-template-columns:1fr 1fr;gap:8px">'+BDF.map(function(f){return '<label class="field">'+esc(f[1]).toUpperCase()+(f[2]?' ('+f[2]+')':'')+'<input id="bd-'+f[0]+'" inputmode="decimal" placeholder="—" value="'+(bd.pre&&bd.pre[f[0]]!=null?String(bd.pre[f[0]]).replace('.',','):'')+'"'+(bd.flag&&bd.flag[f[0]]?' style="border:2px solid #E0A100"':'')+'></label>'}).join('')+'</div><div class="sub">Preencha só o que a balança mostrou.</div><button class="btn pri block" data-act="bdsave">Salvar medição</button></div>';
   }
   if(bd.imp){
     h+='<div class="form"><div class="sub">No Fitdays, exporte o histórico (se o seu app tiver “exportar dados”) e cole aqui o conteúdo, com o cabeçalho na primeira linha. Também funciona copiar as linhas de uma planilha. O app procura colunas como data, peso, gordura, músculo, água, osso, visceral, TMB e IMC.</div><textarea id="bd-txt" rows="6" placeholder="Data;Peso (kg);Gordura corporal (%);..."></textarea><button class="btn pri block" data-act="bdgo">Importar</button></div>';
@@ -1735,14 +1742,14 @@ function bodyCard(){
 var _ve17=viewEvo;viewEvo=function(){return _ve17()+bodyCard()};
 function bdClick(a,b){
   var bd=S.bd;
-  if(a==='bdform'){bd.form=!bd.form;bd.imp=false;bd.msg='';render();return true}
+  if(a==='bdform'){bd.form=!bd.form;bd.imp=false;bd.msg='';if(!bd.form){bd.pre=null;bd.img=null;bd.flag=null;bd.preDate=null}render();return true}
   if(a==='bdimp'){bd.imp=!bd.imp;bd.form=false;bd.msg='';render();return true}
   if(a==='bdmet'){bd.metric=b.dataset.v;render();return true}
   if(a==='bdsave'){
     var d=($('#bd-d')||{}).value||todayIso,e={id:d,d:d},any=0;
     BDF.forEach(function(f){var n=bdNum(($('#bd-'+f[0])||{}).value);if(n!=null){e[f[0]]=n;any=1}});
     if(!any){bd.msg='Preencha pelo menos um valor.';render();return true}
-    bdMerge([e]);bd.form=false;bd.msg='Medição de '+d.slice(8)+'/'+d.slice(5,7)+' salva.';render();return true;
+    bdMerge([e]);bd.form=false;bd.pre=null;bd.img=null;bd.flag=null;bd.preDate=null;bd.msg='Medição de '+d.slice(8)+'/'+d.slice(5,7)+' salva.';render();return true;
   }
   if(a==='bdgo'){
     var r=bdParse(($('#bd-txt')||{}).value);
@@ -1863,6 +1870,230 @@ function cdClick(a,b){
   if(a==='circfin'){circRead(c0);circSync(sid,f);ses.fin=true;saveSes(sid);S.active=null;S.summary=sid;stopT();render();window.scrollTo(0,0);return true}
   return false;
 }
+/* ===== ETAPA 19: calorias do treino + foco em perder gordura ===== */
+S.fat=Object.assign({meta:56,def:350,arroz:120,feijao:100,prot:150,pair:{}},lsGet('pw2-fat')||{});if(!S.fat.pair)S.fat.pair={};
+function saveFat(){lsSet('pw2-fat',S.fat);saveCfg()}
+function kgNow(){var s=bdSeries('peso');if(s.length)return s[s.length-1].v;var p=bdNum(S.prof&&S.prof.peso);return p||0}
+function lastOfKey(k){var s=bdSeries(k);return s.length?s[s.length-1].v:null}
+var KMET=[[3,2.5],[4,3],[4.8,3.5],[5.6,4.3],[6.4,5],[7.2,7],[8,8],[9.7,9.8],[12,12]];
+function metWalk(kmh,inc){
+  var m=KMET[0][1];for(var i=0;i<KMET.length;i++){if(kmh>=KMET[i][0])m=KMET[i][1];if(i&&kmh>KMET[i-1][0]&&kmh<KMET[i][0]){var a=KMET[i-1],b=KMET[i];m=a[1]+(b[1]-a[1])*(kmh-a[0])/(b[0]-a[0])}}
+  var v=kmh*1000/60,g=(inc||0)/100;return m+(kmh>7.5?0.9:1.8)*v*g/3.5;
+}
+var MET={str:4.0,bike:6.8,bikeL:4.0,step:6.0,abs:3.8,other:6.0};
+function kc(met,kg,min){return Math.max(0,(met-1)*kg*min/60)}
+function restMin(x){var r=String(x.rest||''),m;if(m=/(\d+(?:[.,]\d+)?)\s*(?:'|′|min|m\b)/i.exec(r))return +pnum(m[1]);if(m=/(\d+)\s*(?:"|″|s\b|seg)/i.exec(r))return +m[1]/60;return 1}
+function txtMin(t){var m,s=0,re=/(\d+(?:[.,]\d+)?)\s*min/gi;while(m=re.exec(t))s+=+pnum(m[1]);return s}
+function exKcal(x,en,kg){
+  var nm=cdNorm(x),t=String(x.sets||'')+' '+String(x.load||''),min,r;
+  if(/esteira|corrida/.test(nm)){
+    min=en&&en.min!==''&&en.min!=null?+pnum(en.min):txtMin(t);if(!min)return {kcal:0,min:0};
+    var kmh=en&&en.kmh?+pnum(en.kmh):((r=/(\d+(?:[.,]\d+)?)\s*(?:a\s*\d+(?:[.,]\d+)?\s*)?km\/h/i.exec(t))?+pnum(r[1]):5),inc=en&&en.inc?+pnum(en.inc):((r=/inclina[^\d]*(\d+)/i.exec(t))?+r[1]:0);
+    return {kcal:kc(metWalk(kmh,inc),kg,min),min:min};
+  }
+  if(/bike|bicicleta/.test(nm)){min=en&&en.min!==''&&en.min!=null?+pnum(en.min):txtMin(t);return {kcal:kc(/leve/i.test(t)?MET.bikeL:MET.bike,kg,min),min:min}}
+  if(exMg(x)==='aerobio'){min=en&&en.min?+pnum(en.min):txtMin(t);return {kcal:kc(MET.other,kg,min),min:min}}
+  if(x.chk)return {kcal:0,min:0};
+  var n=en?doneSets(en).length:parsePlan(x).sets.length;min=n*(0.75+restMin(x));
+  return {kcal:kc(MET.str,kg,min),min:min};
+}
+function circKcal(f,kg,ses){
+  var d0=circDef(f),rounds=[],c=ses&&ses.circ;
+  if(c){Object.keys(c.d).forEach(function(r){rounds.push({o:c.d[r],ok:c.d[r].ok||{}})})}
+  else{for(var i=0;i<3;i++)rounds.push({o:d0,ok:{est:1,step:1,abd:1,bike:1}})}
+  var k=0,m=0;
+  rounds.forEach(function(q){var o=q.o,ok=q.ok;
+    if(ok.est){k+=kc(metWalk(+o.fk||6,0),kg,+o.fm||0)+kc(metWalk(+o.sk||4,0),kg,+o.sm||0);m+=(+o.fm||0)+(+o.sm||0)}
+    if(ok.step){var mm=(+o.st||0)/30;k+=kc(MET.step,kg,mm);m+=mm}
+    if(ok.abd){var ma=(+o.ab||0)*3/60;k+=kc(MET.abs,kg,ma);m+=ma}
+    if(ok.bike){k+=kc(MET.bike,kg,+o.bk||0);m+=+o.bk||0}});
+  return {kcal:k,min:m};
+}
+function fichaKcal(f,kg,ses){
+  if(!f||!kg)return {kcal:0,min:0,cardio:0,sets:0};
+  if(isCircuit(f)){var c=circKcal(f,kg,ses);return {kcal:c.kcal,min:c.min,cardio:c.min,sets:0}}
+  var t={kcal:0,min:0,cardio:0,sets:0};
+  f.ex.forEach(function(x){var en=ses&&ses.entries&&ses.entries[x.id];if(ses&&!(en&&(en.cd||doneSets(en).length)))return;
+    var q=exKcal(x,ses?en:null,kg);t.kcal+=q.kcal;t.min+=q.min;
+    if(exMg(x)==='aerobio')t.cardio+=q.min;else if(!x.chk)t.sets+=ses?doneSets(en).length:parsePlan(x).sets.length});
+  return t;
+}
+function kcRound(v){return Math.round(v/5)*5}
+function kcTag(f){var kg=kgNow();if(!kg||!f)return '';var q=fichaKcal(f,kg,null);return q.kcal>0?' · ≈ '+kcRound(q.kcal)+' kcal':''}
+var _hv19=viewSummary;
+viewSummary=function(){
+  var r=_hv19(),s=S.ses[S.summary],kg=kgNow();if(!s)return r;
+  var f=sesFicha(s);if(!kg||!f)return r.replace('<div class="stat">','<div class="sub">Para estimar as calorias, registre seu peso em Evolução → Composição corporal.</div><div class="stat">');
+  var q=fichaKcal(f,kg,s);
+  return r.replace('<div class="stat">','<div class="stat"><div><b>≈ '+kcRound(q.kcal)+'</b><span>kcal gastas (acima do repouso)</span></div></div><div class="stat">');
+};
+function weekRange(){var d=new Date(todayIso+'T12:00:00'),m=new Date(d.getTime()-((d.getDay()+6)%7)*864e5),z=function(n){return ('0'+n).slice(-2)};return m.getFullYear()+'-'+z(m.getMonth()+1)+'-'+z(m.getDate())}
+function weekDone(kg){
+  var from=weekRange(),k=0,n=0;sesIds().forEach(function(id){var s=S.ses[id];if(s.date>=from&&sesDone(id)>0){var f=sesFicha(s);if(f){k+=fichaKcal(f,kg,s).kcal;n++}}});return {kcal:k,n:n};
+}
+function weekPlan(kg){var k=0,sets=0,card=0,days=balDays();days.forEach(function(f){var q=fichaKcal(f,kg,null);k+=q.kcal;sets+=q.sets;card+=q.cardio});return {kcal:k,sets:sets,cardio:card,days:days.length}}
+function fatCard(){
+  var kg=kgNow(),F=S.fat,h='<div class="card"><div class="pad cmp"><div class="kicker">Perder gordura</div>';
+  if(!kg){return h+'<div class="sub">Registre uma medição com seu peso (card acima) para o app calcular calorias do treino e metas.</div></div></div>'}
+  var tmb=lastOfKey('tmb'),gord=lastOfKey('gord'),wp=weekPlan(kg),wd=weekDone(kg);
+  h+='<div class="sub">Estimativas por fórmulas (MET × peso × tempo), com erro de 20–30%. Servem para comparar treinos e ajustar metas, não para contar caloria com precisão.</div>';
+  h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><div style="border:1px solid var(--line);border-radius:12px;padding:8px 10px"><div style="font-size:11px;color:var(--muted)">Treinos previstos / semana</div><div style="font-size:18px;font-weight:700">≈ '+kcRound(wp.kcal)+' kcal</div><div style="font-size:11px;color:var(--muted)">média de '+(wp.days?kcRound(wp.kcal/wp.days):0)+' por treino</div></div><div style="border:1px solid var(--line);border-radius:12px;padding:8px 10px"><div style="font-size:11px;color:var(--muted)">Feitos nesta semana</div><div style="font-size:18px;font-weight:700">≈ '+kcRound(wd.kcal)+' kcal</div><div style="font-size:11px;color:var(--muted)">'+wd.n+' treino'+(wd.n===1?'':'s')+'</div></div></div>';
+  // metas de calorias
+  h+='<div class="kicker" style="margin-top:6px">Alimentação</div>';
+  if(!tmb){h+='<div class="sub">Para calcular as calorias do dia, registre a TMB (metabolismo basal) que a balança mostra.</div>'}
+  else{
+    var base=tmb*1.2,perDay=wp.kcal/7,def=F.def,floor=tmb,meta=Math.max(floor,base+perDay-def),mTr=Math.max(floor,base+(wp.days?wp.kcal/wp.days:0)-def),mRest=Math.max(floor,base-def);
+    var prot=[Math.round(kg*1.6/5)*5,Math.round(kg*2/5)*5],pace=def*7/7700,wk=F.meta&&kg>F.meta?Math.ceil((kg-F.meta)/pace):0;
+    h+='<div class="hrow" style="align-items:center"><span class="sub" style="flex:1">Déficit diário ('+def+' kcal)</span><button class="btn ic" data-act="fatdef" data-v="-50" aria-label="Menos déficit">−</button><button class="btn ic" data-act="fatdef" data-v="50" aria-label="Mais déficit">+</button></div>';
+    h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><div style="border:1px solid var(--line);border-radius:12px;padding:8px 10px"><div style="font-size:11px;color:var(--muted)">Dia de treino</div><div style="font-size:18px;font-weight:700">≈ '+kcRound(mTr)+' kcal</div></div><div style="border:1px solid var(--line);border-radius:12px;padding:8px 10px"><div style="font-size:11px;color:var(--muted)">Dia sem treino</div><div style="font-size:18px;font-weight:700">≈ '+kcRound(mRest)+' kcal</div></div></div>';
+    h+='<div class="sub">Base: TMB '+Math.round(tmb)+' kcal × 1,2 (rotina sentada) + treino − déficit. Proteína: '+prot[0]+'–'+prot[1]+' g por dia ('+'1,6–2 g/kg). Nunca abaixo da TMB.'+'</div>';
+    if(mTr<=floor||mRest<=floor)h+='<div class="note" style="margin:0">A meta chegou no piso (a sua TMB). Reduza o déficit em vez de comer menos.</div>';
+    h+='<div class="sub">Ritmo: ≈ '+(Math.round(pace*100)/100).toString().replace('.',',')+' kg por semana'+(wk?' · meta de '+F.meta+' kg em ≈ '+wk+' semanas (~'+Math.round(wk/4.3)+' meses)':'')+'.'+(pace>0.5?' Acima de 0,5 kg/semana costuma custar músculo e rendimento.':'')+'</div>';
+    var plate=F.arroz*1.28+F.feijao*0.77+F.prot*1.65+80,rest2=meta-2*plate;
+    h+='<div class="kicker" style="margin-top:6px">Prato do almoço e do jantar</div><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">'+[['arroz','ARROZ (G)'],['feijao','FEIJÃO (G)'],['prot','PROTEÍNA (G)']].map(function(p){return '<label class="field" style="margin:0">'+p[1]+'<input data-fat="'+p[0]+'" inputmode="numeric" value="'+F[p[0]]+'"></label>'}).join('')+'</div>';
+    h+='<div class="sub">Prato ≈ '+kcRound(plate)+' kcal (arroz e feijão cozidos, proteína grelhada, legumes e 1 colher de chá de azeite). Sobram ≈ '+Math.max(0,kcRound(rest2))+' kcal para café da manhã e lanche na média dos dias.'+(rest2<350?' É pouco: reduza o arroz antes de cortar proteína ou feijão.':'')+'</div>';
+    var ps=bdSeries('peso');
+    if(ps.length>=3){var a=ps[0],b=ps[ps.length-1],span=(new Date(b.d)-new Date(a.d))/864e5;if(span>=14&&a.v-b.v<0.2)h+='<div class="note" style="margin:0">Peso estável há '+Math.round(span)+' dias. Ajuste sugerido: tirar 20–30 g de arroz em uma refeição (≈ 25–40 kcal), depois a gordura extra. Mantenha proteína e feijão.</div>'}
+  }
+  // treino
+  h+='<div class="kicker" style="margin-top:6px">Treino</div><div class="sub">Por semana: '+wp.sets+' séries de musculação e ≈ '+Math.round(wp.cardio)+' min de cardio planejados.</div>';
+  var tips=['Mantenha a carga e o volume da musculação: no déficit, o treino de força é o que protege o músculo.'];
+  var mus=bdSeries('musc'),pes=bdSeries('peso');
+  if(mus.length>=2&&pes.length>=2&&mus[mus.length-1].v-mus[0].v<=-0.8&&pes[pes.length-1].v<pes[0].v)tips.push('Sua massa muscular caiu '+(Math.round((mus[0].v-mus[mus.length-1].v)*10)/10).toString().replace('.',',')+' kg desde a primeira medição, junto com o peso. Reduza o déficit e confira a proteína.');
+  if(gord!=null)tips.push('Gordura corporal na última medição: '+bdFmt(gord,'gord')+'. Acompanhe a tendência, não um dia só.');
+  if(wp.cardio<150){tips.push('Cardio planejado: '+Math.round(wp.cardio)+' min. A referência geral é 150 min por semana de cardio moderado, então cabe um bloco leve depois da musculação.')}
+  h+='<ul class="list">'+tips.map(function(t){return '<li style="padding:4px 0;font-size:13px">'+esc(t)+'</li>'}).join('')+'</ul>';
+  if(wp.cardio<150){
+    var days=balDays().map(function(f){return {f:f,c:fichaKcal(f,kg,null).cardio,n:f.ex.length}}).sort(function(a,b){return a.c-b.c||a.n-b.n}).slice(0,3);
+    h+='<div class="sub" style="margin:6px 0">Adicionar Esteira 25 min · 5,5 km/h · inclinação 5 (≈ '+kcRound(kc(metWalk(5.5,5),kg,25))+' kcal) em:</div>'+days.map(function(d,i){return '<button class="btn block balday'+(i===0?' pri':'')+'" data-act="fatadd" data-fid="'+d.f.id+'">'+(i===0?'Sugerido · ':'')+esc(fichaTitle(d.f))+' <small style="opacity:.8;font-size:inherit;font-weight:500">('+Math.round(d.c)+' min de cardio hoje)</small></button>'}).join('');
+  }
+  if(S.fat.msg)h+='<div class="note" style="margin:8px 0 0">'+esc(S.fat.msg)+'</div>';
+  return h+'</div></div>';
+}
+var _ve19=viewEvo;viewEvo=function(){return _ve19()+fatCard()};
+document.addEventListener('input',function(ev){var t=ev.target,k=t.dataset&&t.dataset.fat;if(!k)return;var n=parseInt(t.value,10);if(isFinite(n)&&n>=0&&n<=1000){S.fat[k]=n;saveFat()}});
+document.addEventListener('focusout',function(ev){if(ev.target&&ev.target.dataset&&ev.target.dataset.fat)setTimeout(render,60)});
+function fatClick(a,b){
+  if(a==='fatdef'){S.fat.def=Math.max(100,Math.min(600,S.fat.def+(+b.dataset.v)));saveFat();render();return true}
+  if(a==='fatadd'){
+    editFicha(b.dataset.fid,function(f){f.ex.push({id:'u'+Date.now().toString(36),name:'Esteira',sets:'25 min',load:'5,5 km/h · inclinação 5',rest:'',mg:'aerobio'})});
+    S.fat.msg='Esteira 25 min entrou em “'+fichaTitle(getFicha(b.dataset.fid))+'”. Você pode editar tempo e velocidade na ficha.';render();return true;
+  }
+  return false;
+}
+
+/* ---- halteres: carga por halter (o que está escrito no peso) e total puxado ---- */
+function pairAuto(n){return /\bpar\b|crucifixo|desenvolvimento|elevacao (lateral|frontal)/.test(norm(n))&&!/concentrado|unilateral/.test(norm(n))}
+function pairOf(n){var v=S.fat.pair&&S.fat.pair[norm(n)];return v==null?pairAuto(n):!!v}
+var _ds19=doneSets;
+doneSets=function(e){var o=_ds19(e),m=e&&e.n&&pairOf(e.n)?2:1;o.forEach(function(s){s.m=m});return o};
+function pairShow(x){return pairOf(x.name)||/halter|\bpar\b|crucifixo|elevacao|desenvolvimento|avanco|stiff/.test(norm(x.name)+' '+norm(x.load||''))}
+var _va19=viewActive;
+viewActive=function(){
+  var h=_va19();if(!S.active)return h;var ses=S.ses[S.active.sid],f=ses&&sesFicha(ses),x=f&&f.ex[S.active.i];
+  if(!x||x.chk||exMg(x)==='aerobio'||!pairShow(x))return h;
+  var on=pairOf(x.name),en=(ses.entries&&ses.entries[x.id])||{},kg=0;
+  try{blocksOf(x,en,lastOf(x.name,S.active.sid)).forEach(function(q){if(!kg&&!q.warm)kg=num(q.kg)})}catch(e){}
+  var row='<div class="hrow" style="align-items:center;margin:10px 0 2px"><button class="chip" data-act="pairtog" aria-pressed="'+on+'" style="min-height:40px">'+(on?'✓ ':'')+'2 halteres (par)</button><span class="sub" style="flex:1;margin:0">'+(on?'Digite o peso de <b>um</b> halter'+(kg?': '+nf(kg)+' × 2 = <b>'+nf(kg*2)+' kg</b> no total':'. O app soma os dois.'):'Digite o peso total que você move. Toque se usa um halter em cada mão.')+'</span></div>';
+  var i=h.indexOf('<div class="blk');if(i<0)return h;h=h.slice(0,i)+row+h.slice(i);
+  if(on)h=h.split('<label>Carga (kg)<input').join('<label>kg por halter<input');
+  return h;
+};
+var _fc19=fatClick;
+fatClick=function(a,b){
+  if(a==='pairtog'&&S.active){var ses=S.ses[S.active.sid],f=sesFicha(ses),x=f.ex[S.active.i];S.fat.pair[norm(x.name)]=!pairOf(x.name);saveFat();render();return true}
+  return _fc19(a,b);
+};
+/* ===== ETAPA 20: ler foto da balança (Claude quando disponível; senão OCR no aparelho) ===== */
+var BDKEYS=['peso','imc','gord','mgord','tmus','musc','mesq','osso','prot','agua','gsub','visc','idc','tmb','mlg'];
+function bdFixNum(t){
+  var s=String(t).replace(/[DOo]/g,'0').replace(/[lI|]/g,'1').replace(/S/g,'5').replace(/B/g,'8').replace(/,/g,'.');
+  var m=/\d+(?:\.\d+)?/.exec(s);return m?{v:parseFloat(m[0]),dirty:/[^\d.,%\s]/.test(String(t).replace(/%$/,''))}:null;
+}
+function bdLabKey(p){
+  p=norm(p);
+  if(/^imc|^bmi/.test(p))return 'imc';
+  if(/gordura\s*c/.test(p))return 'gord';
+  if(/massa\s*gord|^gorda/.test(p))return 'mgord';
+  if(/taxa\s*musc/.test(p))return 'tmus';
+  if(/massa\s*musc/.test(p))return 'musc';
+  if(/musculo\s*esq|esquel/.test(p))return 'mesq';
+  if(/massa\s*oss|^ossea|massa\s*os/.test(p))return 'osso';
+  if(/^proteina/.test(p))return 'prot';
+  if(/agua\s*corp/.test(p))return 'agua';
+  if(/gordura\s*sub/.test(p))return 'gsub';
+  if(/gordura\s*vis/.test(p))return 'visc';
+  if(/idade\s*corp/.test(p))return 'idc';
+  if(/^tmb|^bmr/.test(p))return 'tmb';
+  if(/^peso$/.test(p))return 'peso';
+  return '';
+}
+/* words: [{t, b:{x0,y0,x1,y1}, c}] vindas do OCR; devolve {vals, flag, date} */
+function bdParseWords(words){
+  var isNum=function(w){return /\d/.test(w.t)&&!/[a-z]{3,}/i.test(w.t)&&!/^\d{1,2}:\d{2}$/.test(w.t)&&!/^\d{2}\/\d{2}\/\d{4}$/.test(w.t)};
+  var lab=words.filter(function(w){return !isNum(w)&&/^[A-Za-zÀ-ÿ]{2,}\.{0,3}$/.test(w.t)});
+  var lines=[];lab.slice().sort(function(a,b){return a.b.y0-b.b.y0}).forEach(function(w){var l=lines.filter(function(q){return Math.abs(q.y-w.b.y0)<16})[0];if(l)l.w.push(w);else lines.push({y:w.b.y0,w:[w]})});
+  var phr=[];lines.forEach(function(l){l.w.sort(function(a,b){return a.b.x0-b.b.x0}).forEach(function(w){var p=phr[phr.length-1];
+    if(p&&p.line===l&&w.b.x0-p.x1<40){p.t+=' '+w.t;p.x1=w.b.x1}else phr.push({t:w.t,x0:w.b.x0,x1:w.b.x1,y:l.y,line:l})})});
+  var vals={},flag={},conf={};
+  words.filter(isNum).forEach(function(w){
+    var cx=(w.b.x0+w.b.x1)/2,cy=w.b.y0,best=null;
+    phr.forEach(function(p){var dy=cy-p.y,dx=Math.abs(cx-(p.x0+p.x1)/2);if(dy>25&&dy<150&&dx<200&&(!best||dy<best.dy))best={p:p,dy:dy}});
+    if(!best)return;var k=bdLabKey(best.p.t);if(!k||vals[k]!=null)return;
+    var n=bdFixNum(w.t);if(!n)return;vals[k]=n.v;conf[k]=w.c;if(n.dirty||w.c<80)flag[k]=true;
+  });
+  var chk=function(a,b,ok){if(vals[a]!=null&&vals[b]!=null&&!ok()){flag[a]=true;flag[b]=true}};
+  chk('mgord','gord',function(){return vals.peso==null||Math.abs(vals.peso*vals.gord/100-vals.mgord)<=0.5});
+  chk('tmus','musc',function(){return vals.peso==null||Math.abs(vals.musc/vals.peso*100-vals.tmus)<=1.2});
+  if(vals.peso!=null&&vals.mgord!=null&&vals.mlg==null)vals.mlg=Math.round((vals.peso-vals.mgord)*10)/10;
+  var txt=words.map(function(w){return w.t}).join(' '),dm=/(\d{2})\/(\d{2})\/(\d{4})/.exec(txt);
+  return {vals:vals,flag:flag,date:dm?dm[3]+'-'+dm[2]+'-'+dm[1]:null};
+}
+function bdLoadImg(file){
+  return new Promise(function(ok,no){var u=URL.createObjectURL(file),im=new Image();im.onload=function(){ok({im:im,url:u})};im.onerror=function(){no(new Error('imagem inválida'))};im.src=u});
+}
+function bdShrink(im,maxW){
+  var sc=Math.min(1,maxW/im.naturalWidth),c=document.createElement('canvas');c.width=Math.round(im.naturalWidth*sc);c.height=Math.round(im.naturalHeight*sc);
+  c.getContext('2d').drawImage(im,0,0,c.width,c.height);
+  return new Promise(function(ok){c.toBlob(function(b){ok(b)},'image/jpeg',0.92)});
+}
+var BDPROMPT='Esta imagem é a tela "Dados medidos" do app Fitdays (balança de bioimpedância), em português. Leia os valores numéricos e responda SOMENTE com um objeto JSON com estas chaves (use null quando o valor não aparecer, ponto como decimal, sem unidades): data (AAAA-MM-DD), peso (kg), imc, gord (gordura corporal %), mgord (massa gorda kg), tmus (taxa muscular %), musc (massa muscular kg), mesq (músculo esquelético %), osso (massa óssea kg), prot (proteína %), agua (água corporal %), gsub (gordura subcutânea %), visc (gordura visceral), idc (idade corporal), tmb (kcal), mlg (peso corporal sem gordura kg). Não invente nem estime valores que não estejam visíveis.';
+async function bdViaClaude(blob){
+  if(!window.claude||!claude.use)return null;
+  var sm=await claude.use('sample');if(!sm)return null;
+  var lim=sm.limits?await sm.limits():{};if(!lim||!lim.images)return null;
+  var o=await sm.json(BDPROMPT,{images:[blob],cache:false});
+  if(!o||typeof o!=='object')return null;
+  var vals={};BDKEYS.forEach(function(k){var n=o[k]==null?null:bdNum(o[k]);if(n!=null)vals[k]=n});
+  return {vals:vals,flag:{},date:/^\d{4}-\d{2}-\d{2}$/.test(o.data||'')?o.data:null,via:'Claude'};
+}
+function bdLoadScript(src){
+  return new Promise(function(ok,no){if(window.Tesseract)return ok();var s=document.createElement('script');s.src=src;s.onload=ok;s.onerror=function(){no(new Error('sem acesso ao leitor de texto (precisa de internet)'))};document.head.appendChild(s)});
+}
+async function bdViaOcr(blob){
+  await bdLoadScript('https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js');
+  var w=await Tesseract.createWorker('por',1,{logger:function(m){var el=document.getElementById('bd-busy');if(el&&m.progress!=null)el.textContent='Lendo a foto… '+Math.round(m.progress*100)+'%'}});
+  try{
+    await w.setParameters({tessedit_pageseg_mode:'11'});
+    var r=await w.recognize(blob,{},{blocks:true,text:true});
+    var ws=(r.data.words||[]).map(function(x){return {t:x.text,b:x.bbox,c:x.confidence}});
+    var p=bdParseWords(ws);p.via='OCR';return p;
+  }finally{try{await w.terminate()}catch(e){}}
+}
+async function bdRead(file){
+  var bd=S.bd;bd.busy='Lendo a foto…';bd.msg='';bd.form=false;bd.imp=false;render();
+  try{
+    var L=await bdLoadImg(file),blob=await bdShrink(L.im,1400),res=null,err='';
+    try{res=await bdViaClaude(blob)}catch(e){err=String(e&&e.message||e)}
+    if(!res||!Object.keys(res.vals).length){try{res=await bdViaOcr(blob)}catch(e){err=String(e&&e.message||e);res=null}}
+    bd.img=L.url;bd.form=true;bd.busy='';
+    if(res&&Object.keys(res.vals).length){bd.pre=res.vals;bd.flag=res.flag||{};bd.preDate=res.date;bd.msg='Valores lidos ('+res.via+'): '+Object.keys(res.vals).length+'. Confira com a foto e salve.'}
+    else{bd.pre={};bd.flag={};bd.preDate=null;bd.msg='Não consegui ler os valores automaticamente'+(err?' ('+err+')':'')+'. A foto está aí em cima: digite os números.'}
+  }catch(e){bd.busy='';bd.msg='Não consegui abrir a imagem: '+String(e&&e.message||e)}
+  render();
+}
+document.addEventListener('change',function(ev){var t=ev.target;if(t&&t.id==='bd-file'&&t.files&&t.files[0]){var f=t.files[0];t.value='';bdRead(f)}});
+var _bdc20=bdClick;bdClick=function(a,b){if(a==='bdphoto'){var i=document.getElementById('bd-file');if(i)i.click();return true}return _bdc20(a,b)};
 
 render();
 
@@ -1878,7 +2109,7 @@ try{
       },function(){S.sync='error';foot()});
       db.doc('app/config').onSnapshot(function(s){
         if(pend.cfg||!s.exists)return;var d=s.data()||{};
-        S.over=d.over?clone(d.over):{};S.off=d.off?clone(d.off):{};lsSet('pw2-off',S.off);if(d.body){S.body=clone(d.body);lsSet('pw2-body',S.body)}if(d.week&&!weekTouched)S.week=d.week;
+        S.over=d.over?clone(d.over):{};S.off=d.off?clone(d.off):{};lsSet('pw2-off',S.off);if(d.body){S.body=clone(d.body);lsSet('pw2-body',S.body)}if(d.fat){S.fat=Object.assign(S.fat||{},clone(d.fat));lsSet('pw2-fat',S.fat)}if(d.week&&!weekTouched)S.week=d.week;
         lsSet('pw2-over',S.over);lsSet('pw2-week',S.week);if(!S.active)refresh();
       },function(){});
       db.doc('app/profile').onSnapshot(function(s){
