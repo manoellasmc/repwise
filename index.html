@@ -2,7 +2,7 @@
 <html lang="pt-BR"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<script>window.APPV="19/11 16:15 UTC"</script>
+<script>window.APPV="19/11 16:24 UTC"</script>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/icon-32.png">
 <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
@@ -1871,7 +1871,7 @@ function cdClick(a,b){
   return false;
 }
 /* ===== ETAPA 19: calorias do treino + foco em perder gordura ===== */
-S.fat=Object.assign({meta:56,def:350,arroz:120,feijao:100,prot:150,pair:{}},lsGet('pw2-fat')||{});if(!S.fat.pair)S.fat.pair={};
+S.fat=Object.assign({meta:56,def:350,arroz:120,feijao:100,prot:150,rest:1,swap:2,pair:{}},lsGet('pw2-fat')||{});if(!S.fat.pair)S.fat.pair={};
 function saveFat(){lsSet('pw2-fat',S.fat);saveCfg()}
 function kgNow(){var s=bdSeries('peso');if(s.length)return s[s.length-1].v;var p=bdNum(S.prof&&S.prof.peso);return p||0}
 function lastOfKey(k){var s=bdSeries(k);return s.length?s[s.length-1].v:null}
@@ -1880,9 +1880,9 @@ function metWalk(kmh,inc){
   var m=KMET[0][1];for(var i=0;i<KMET.length;i++){if(kmh>=KMET[i][0])m=KMET[i][1];if(i&&kmh>KMET[i-1][0]&&kmh<KMET[i][0]){var a=KMET[i-1],b=KMET[i];m=a[1]+(b[1]-a[1])*(kmh-a[0])/(b[0]-a[0])}}
   var v=kmh*1000/60,g=(inc||0)/100;return m+(kmh>7.5?0.9:1.8)*v*g/3.5;
 }
-var MET={str:4.0,bike:6.8,bikeL:4.0,step:6.0,abs:3.8,other:6.0};
+var MET={str:3.5,bike:6.8,bikeL:4.0,step:6.0,abs:3.8,other:6.0};
 function kc(met,kg,min){return Math.max(0,(met-1)*kg*min/60)}
-function restMin(x){var r=String(x.rest||''),m;if(m=/(\d+(?:[.,]\d+)?)\s*(?:'|′|min|m\b)/i.exec(r))return +pnum(m[1]);if(m=/(\d+)\s*(?:"|″|s\b|seg)/i.exec(r))return +m[1]/60;return 1}
+function restMin(x){return Math.max(0,+S.fat.rest);var r=String(x.rest||''),m;if(m=/(\d+(?:[.,]\d+)?)\s*(?:'|′|min|m\b)/i.exec(r))return +pnum(m[1]);if(m=/(\d+)\s*(?:"|″|s\b|seg)/i.exec(r))return +m[1]/60;return 1}
 function txtMin(t){var m,s=0,re=/(\d+(?:[.,]\d+)?)\s*min/gi;while(m=re.exec(t))s+=+pnum(m[1]);return s}
 function exKcal(x,en,kg){
   var nm=cdNorm(x),t=String(x.sets||'')+' '+String(x.load||''),min,r;
@@ -1909,13 +1909,18 @@ function circKcal(f,kg,ses){
     if(ok.bike){k+=kc(MET.bike,kg,+o.bk||0);m+=+o.bk||0}});
   return {kcal:k,min:m};
 }
+function sesMin(ses){if(!ses||!ses.t0||!ses.t1)return 0;var m=(ses.t1-ses.t0)/60000;return m>=5&&m<=240?m:0}
 function fichaKcal(f,kg,ses){
-  if(!f||!kg)return {kcal:0,min:0,cardio:0,sets:0};
-  if(isCircuit(f)){var c=circKcal(f,kg,ses);return {kcal:c.kcal,min:c.min,cardio:c.min,sets:0}}
-  var t={kcal:0,min:0,cardio:0,sets:0};
+  if(!f||!kg)return {kcal:0,min:0,cardio:0,sets:0,total:0};
+  if(isCircuit(f)){var c=circKcal(f,kg,ses);return {kcal:c.kcal,min:c.min,cardio:c.min,sets:0,total:c.min}}
+  var t={kcal:0,min:0,cardio:0,sets:0,str:0,nstr:0};
   f.ex.forEach(function(x){var en=ses&&ses.entries&&ses.entries[x.id];if(ses&&!(en&&(en.cd||doneSets(en).length)))return;
-    var q=exKcal(x,ses?en:null,kg);t.kcal+=q.kcal;t.min+=q.min;
-    if(exMg(x)==='aerobio')t.cardio+=q.min;else if(!x.chk)t.sets+=ses?doneSets(en).length:parsePlan(x).sets.length});
+    var q=exKcal(x,ses?en:null,kg);t.min+=q.min;
+    if(exMg(x)==='aerobio'||/esteira|bike|bicicleta/.test(cdNorm(x))){t.kcal+=q.kcal;t.cardio+=q.min}
+    else if(!x.chk){t.str+=q.min;t.nstr++;t.sets+=ses?doneSets(en).length:parsePlan(x).sets.length}});
+  var swap=Math.max(0,t.nstr-1)*Math.max(0,+S.fat.swap),strT=t.str+swap,real=sesMin(ses);
+  if(real&&t.nstr)strT=Math.max(strT*0.5,real-t.cardio);
+  t.kcal+=kc(MET.str,kg,strT);t.total=strT+t.cardio;t.real=real;
   return t;
 }
 function kcRound(v){return Math.round(v/5)*5}
@@ -1924,8 +1929,8 @@ var _hv19=viewSummary;
 viewSummary=function(){
   var r=_hv19(),s=S.ses[S.summary],kg=kgNow();if(!s)return r;
   var f=sesFicha(s);if(!kg||!f)return r.replace('<div class="stat">','<div class="sub">Para estimar as calorias, registre seu peso em Evolução → Composição corporal.</div><div class="stat">');
-  var q=fichaKcal(f,kg,s);
-  return r.replace('<div class="stat">','<div class="stat"><div><b>≈ '+kcRound(q.kcal)+'</b><span>kcal gastas (acima do repouso)</span></div></div><div class="stat">');
+  var q=fichaKcal(f,kg,s),hm=function(t){var d=new Date(t);return ('0'+d.getHours()).slice(-2)+':'+('0'+d.getMinutes()).slice(-2)},dur=sesMin(s);
+  return r.replace('<div class="stat">','<div class="stat"><div><b>'+(dur?Math.round(dur)+' min':'—')+'</b><span>'+(dur?'duração ('+hm(s.t0)+' → '+hm(s.t1)+')':'duração (sem horário registrado)')+'</span></div><div><b>≈ '+kcRound(q.kcal)+'</b><span>kcal gastas (acima do repouso)</span></div></div><div class="stat">');
 };
 function weekRange(){var d=new Date(todayIso+'T12:00:00'),m=new Date(d.getTime()-((d.getDay()+6)%7)*864e5),z=function(n){return ('0'+n).slice(-2)};return m.getFullYear()+'-'+z(m.getMonth()+1)+'-'+z(m.getDate())}
 function weekDone(kg){
@@ -1956,7 +1961,7 @@ function fatCard(){
     if(ps.length>=3){var a=ps[0],b=ps[ps.length-1],span=(new Date(b.d)-new Date(a.d))/864e5;if(span>=14&&a.v-b.v<0.2)h+='<div class="note" style="margin:0">Peso estável há '+Math.round(span)+' dias. Ajuste sugerido: tirar 20–30 g de arroz em uma refeição (≈ 25–40 kcal), depois a gordura extra. Mantenha proteína e feijão.</div>'}
   }
   // treino
-  h+='<div class="kicker" style="margin-top:6px">Treino</div><div class="sub">Por semana: '+wp.sets+' séries de musculação e ≈ '+Math.round(wp.cardio)+' min de cardio planejados.</div>';
+  h+='<div class="kicker" style="margin-top:6px">Treino</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">'+[['rest','DESCANSO ENTRE SÉRIES (MIN)'],['swap','TROCA DE APARELHO (MIN)']].map(function(p){return '<label class="field" style="margin:0">'+p[1]+'<input data-fat="'+p[0]+'" inputmode="numeric" value="'+F[p[0]]+'"></label>'}).join('')+'</div><div class="sub">Por semana: '+wp.sets+' séries de musculação e ≈ '+Math.round(wp.cardio)+' min de cardio planejados.</div>';
   var tips=['Mantenha a carga e o volume da musculação: no déficit, o treino de força é o que protege o músculo.'];
   var mus=bdSeries('musc'),pes=bdSeries('peso');
   if(mus.length>=2&&pes.length>=2&&mus[mus.length-1].v-mus[0].v<=-0.8&&pes[pes.length-1].v<pes[0].v)tips.push('Sua massa muscular caiu '+(Math.round((mus[0].v-mus[mus.length-1].v)*10)/10).toString().replace('.',',')+' kg desde a primeira medição, junto com o peso. Reduza o déficit e confira a proteína.');
@@ -2004,6 +2009,9 @@ fatClick=function(a,b){
   if(a==='pairtog'&&S.active){var ses=S.ses[S.active.sid],f=sesFicha(ses),x=f.ex[S.active.i];S.fat.pair[norm(x.name)]=!pairOf(x.name);saveFat();render();return true}
   return _fc19(a,b);
 };
+
+var _sv19=saveSes;
+saveSes=function(id){var q=S.ses[id];if(q){if(q.fin){if(!q.t1)q.t1=Date.now()}else if(q.t1)delete q.t1;if(!q.t0)q.t0=Date.now()}return _sv19(id)};
 /* ===== ETAPA 20: ler foto da balança (Claude quando disponível; senão OCR no aparelho) ===== */
 var BDKEYS=['peso','imc','gord','mgord','tmus','musc','mesq','osso','prot','agua','gsub','visc','idc','tmb','mlg'];
 function bdFixNum(t){
