@@ -2,7 +2,7 @@
 <html lang="pt-BR"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<script>window.APPV="19/11 16:24 UTC"</script>
+<script>window.APPV="21/11 13:51 UTC"</script>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/icon-32.png">
 <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
@@ -2102,6 +2102,63 @@ async function bdRead(file){
 }
 document.addEventListener('change',function(ev){var t=ev.target;if(t&&t.id==='bd-file'&&t.files&&t.files[0]){var f=t.files[0];t.value='';bdRead(f)}});
 var _bdc20=bdClick;bdClick=function(a,b){if(a==='bdphoto'){var i=document.getElementById('bd-file');if(i)i.click();return true}return _bdc20(a,b)};
+/* ===== ETAPA 21: histórico em calendário mensal ===== */
+S.hc={m:todayIso.slice(0,7),sel:null};
+(function(){var st=document.createElement('style');st.textContent=
+'.cal{padding:14px 12px 16px}.cal .cm{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}.cal .cm b{font-size:17px}'+
+'.cal .cm button{width:44px;height:44px;border-radius:12px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-size:20px}'+
+'.cal .cs{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}.cal .cs small{display:block;font-size:11px;color:var(--muted);letter-spacing:.04em;text-transform:uppercase}.cal .cs b{display:block;font-size:15px;color:var(--good);margin-top:2px}'+
+'.cal .dh,.cal .dr{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}.cal .dh span{text-align:center;font-size:12px;color:var(--muted);padding:2px 0 6px;font-weight:600}'+
+'.cal .dr{padding:4px;border:1px solid var(--line);border-radius:16px;margin-bottom:6px}.cal .dr.on{background:color-mix(in srgb,var(--good) 10%,transparent);border-color:var(--good)}'+
+'.cal .dd{aspect-ratio:1;max-height:46px;border-radius:50%;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-size:14px;font-weight:600;display:flex;align-items:center;justify-content:center;padding:0;min-height:0;margin:0 auto;width:100%}'+
+'.cal .dd.out{visibility:hidden}.cal .dd.td{border:2px solid var(--ink)}.cal .dd.ok{border:2px solid var(--good);color:var(--good)}.cal .dd.sel{background:var(--navy);color:var(--on-navy);border-color:var(--navy)}.cal .dd.ok.sel{background:var(--good);color:#fff}'+
+'.dtl h3{margin:0 0 4px}.dtl .ex{padding:8px 0;border-top:1px solid var(--line)}';
+document.head.appendChild(st)})();
+function hcSess(d){return sesIds().filter(function(id){return S.ses[id].date===d&&sesDone(id)>0})}
+function hcCard(id){
+  var s=S.ses[id],f=sesFicha(s),kg=kgNow(),en=s.entries||{},h='<div class="card dtl"><div class="pad"><div class="kicker">Treino realizado</div><h3>'+esc(sesTitle(s))+'</h3>',dur=sesMin(s),bits=[];
+  if(dur)bits.push(Math.round(dur)+' min');
+  if(kg&&f)bits.push('≈ '+kcRound(fichaKcal(f,kg,s).kcal)+' kcal');
+  bits.push(nf(sesVolume(id))+' kg de volume');
+  h+='<div class="sub">'+bits.join(' · ')+'</div>';
+  if(s.circ&&s.circ.d){var rr=Object.keys(s.circ.d).length;h+='<div class="ex"><b>Circuito</b><div class="sub">'+rr+' rodada'+(rr===1?'':'s')+' registrada'+(rr===1?'':'s')+'</div></div>'}
+  var order=f?f.ex.map(function(x){return x.id}):Object.keys(en);
+  order.forEach(function(k){var e=en[k];if(!e)return;var ds=doneSets(e);if(!ds.length&&!e.cd)return;
+    h+='<div class="ex"><b>'+esc(e.n)+'</b>'+(ds.length?'<div class="chips" style="margin-top:4px">'+ds.map(function(q){return '<span class="chip">'+nf(q.kg)+(q.m>1?' kg ×'+q.m:' kg')+' × '+q.reps+'</span>'}).join('')+'</div>'+(ds[0].m>1?'<div class="sub">Peso por halter. Total movido: '+nf(vol(ds))+' kg.</div>':''):'<div class="sub">'+(e.min?esc(e.min)+' min':'Concluído')+(e.kmh?' · '+esc(e.kmh)+' km/h':'')+(e.inc?' · inclinação '+esc(e.inc):'')+'</div>')+(e.note?'<div class="sub">“'+esc(e.note)+'”</div>':'')+'</div>'});
+  h+='<div class="acts" style="margin-top:8px"><button class="btn sm" data-act="seesum" data-id="'+id+'">Comparar com anterior</button><button class="btn sm dng" data-act="delses" data-id="'+id+'">'+(S.confirm===id?'Confirmar exclusão':'Excluir treino')+'</button></div></div></div>';
+  return h;
+}
+viewHist0=function(){
+  var m=S.hc.m,p=m.split('-'),y=+p[0],mo=+p[1]-1,first=new Date(y,mo,1),n=new Date(y,mo+1,0).getDate(),lead=(first.getDay()+6)%7,z=function(v){return ('0'+v).slice(-2)};
+  var days={},fn={},cnt=0;
+  sesIds().forEach(function(id){var s=S.ses[id];if(s.date.slice(0,7)!==m||sesDone(id)<=0)return;days[s.date]=1;cnt++;fn[s.fn]=(fn[s.fn]||0)+1});
+  var nd=Object.keys(days).length,top=Object.keys(fn).sort(function(a,b){return fn[b]-fn[a]})[0];
+  var title=first.toLocaleDateString('pt-BR',{month:'long',year:'numeric'});title=title.charAt(0).toUpperCase()+title.slice(1).replace(' De ',' de ');
+  var h='<div class="card cal"><div class="cm"><button data-act="hmon" data-v="-1" aria-label="Mês anterior">‹</button><b>'+title+'</b><button data-act="hmon" data-v="1" aria-label="Próximo mês">›</button></div>'+
+   '<div class="cs"><div><small>Dias de treino</small><b>'+nd+(nd===1?' dia':' dias')+'</b></div><div><small>Treino mais frequente</small><b>'+(top?esc(top.length>26?top.slice(0,25)+'…':top):'—')+'</b></div></div>'+
+   '<div class="dh">'+['Seg','Ter','Qua','Qui','Sex','Sáb','Dom'].map(function(d){return '<span>'+d+'</span>'}).join('')+'</div>';
+  var cells=[];for(var i=0;i<lead;i++)cells.push(null);for(var d=1;d<=n;d++)cells.push(y+'-'+z(mo+1)+'-'+z(d));while(cells.length%7)cells.push(null);
+  for(var r=0;r<cells.length;r+=7){
+    var row=cells.slice(r,r+7),any=row.some(function(c){return c&&days[c]});
+    h+='<div class="dr'+(any?' on':'')+'">'+row.map(function(c){
+      if(!c)return '<span class="dd out"></span>';
+      var cl='dd'+(days[c]?' ok':'')+(c===todayIso?' td':'')+(S.hc.sel===c?' sel':'');
+      return '<button class="'+cl+'" data-act="hday" data-v="'+c+'" aria-label="'+fmt(c,{day:'numeric',month:'long'})+(days[c]?', treino realizado':'')+'" aria-pressed="'+(S.hc.sel===c)+'">'+(days[c]?'✓':+c.slice(8))+'</button>';
+    }).join('')+'</div>';
+  }
+  h+='</div>';
+  if(!S.hc.sel)return h+'<div class="sub" style="text-align:center;margin:4px 0 12px">Toque em um dia para ver o treino realizado.</div>';
+  var ids=hcSess(S.hc.sel);
+  h+='<div class="kicker" style="margin:4px 4px 8px">'+fmt(S.hc.sel,{weekday:'long',day:'numeric',month:'long'})+'</div>';
+  if(!ids.length)return h+'<div class="card"><div class="empty">Nenhum treino registrado neste dia.</div></div>';
+  return h+ids.map(hcCard).join('');
+};
+var _fc21=fatClick;
+fatClick=function(a,b){
+  if(a==='hmon'){var p=S.hc.m.split('-'),d=new Date(+p[0],+p[1]-1+(+b.dataset.v),1);S.hc.m=d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2);S.hc.sel=null;render();return true}
+  if(a==='hday'){S.hc.sel=S.hc.sel===b.dataset.v?null:b.dataset.v;render();return true}
+  return _fc21(a,b);
+};
 
 render();
 
