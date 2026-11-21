@@ -2,7 +2,7 @@
 <html lang="pt-BR"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<script>window.APPV="21/11 13:54 UTC"</script>
+<script>window.APPV="21/11 14:05 UTC"</script>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/icon-32.png">
 <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
@@ -562,7 +562,7 @@ function viewFichaDetail(f){
   f.ex.forEach(function(x,i){
     if(S.form&&S.form.mode==='edit'&&S.form.id===x.id){h+='<li>'+formHtml(x)+'</li>';return}
     var g=exMg(x);
-    h+='<li class="ex"><div class="tx"><div class="nm">'+esc(x.name)+'</div><div class="rx">'+[x.sets,x.load,x.rest?'descanso '+x.rest:''].filter(Boolean).map(esc).join(' · ')+'</div>'+(g?'<span class="mg">'+MGN[g]+'</span>':'<span class="mg" style="background:var(--bg);color:var(--muted)">sem grupo</span>')+(function(){var m=x.lib?{id:x.lib}:libOf(x.name);return m&&LIBIDX[m.id]?'<div><button class="xlink" data-act="libopen" data-id="'+esc(m.id)+'">'+(m.sim?'ver exercício parecido':'ver na biblioteca')+' ›</button></div>':''})()+((g&&g!=='aerobio'&&!x.chk)?'<div><button class="xlink" data-act="swap" data-id="'+x.id+'">'+(S.swap===x.id?'fechar trocas':'trocar exercício')+'</button></div>':'')+'</div>'+
+    h+='<li class="ex"><div class="tx"><div class="nm">'+esc(x.name)+'</div><div class="rx">'+[x.sets,x.load,x.rest?'descanso '+x.rest:''].filter(Boolean).map(esc).join(' · ')+'</div>'+(g?'<span class="mg">'+MGN[g]+'</span>':'<span class="mg" style="background:var(--bg);color:var(--muted)">sem grupo</span>')+(function(){var m=x.lib?{id:x.lib}:libOf(x.name);return m&&LIBIDX[m.id]?'<div><button class="xlink" data-act="how" data-id="'+esc(m.id)+'">▶ '+(m.sim?'Como fazer (exercício parecido)':'Como fazer')+'</button></div>':''})()+((g&&g!=='aerobio'&&!x.chk)?'<div><button class="xlink" data-act="swap" data-id="'+x.id+'">'+(S.swap===x.id?'fechar trocas':'trocar exercício')+'</button></div>':'')+'</div>'+
       '<button class="ic" data-act="up" data-id="'+x.id+'" aria-label="Subir" '+(i===0?'disabled':'')+'>↑</button><button class="ic" data-act="dn" data-id="'+x.id+'" aria-label="Descer" '+(i===f.ex.length-1?'disabled':'')+'>↓</button>'+
       '<button class="ic" data-act="edit" data-id="'+x.id+'" aria-label="Editar">✎</button>'+
       '<button class="ic" data-act="del" data-id="'+x.id+'" aria-label="Remover" style="'+(S.confirm===x.id?'border-color:var(--bad);color:var(--bad)':'')+'">'+(S.confirm===x.id?'?':'×')+'</button>'+(S.swap===x.id&&exMg(x)&&exMg(x)!=='aerobio'&&!x.chk?'<div style="flex:0 0 100%">'+swapPanel(x)+'</div>':'')+'</li>';
@@ -2158,6 +2158,52 @@ fatClick=function(a,b){
   if(a==='hmon'){var p=S.hc.m.split('-'),d=new Date(+p[0],+p[1]-1+(+b.dataset.v),1);S.hc.m=d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2);S.hc.sel=null;render();return true}
   if(a==='hday'){S.hc.sel=S.hc.sel===b.dataset.v?null:b.dataset.v;render();return true}
   return _fc21(a,b);
+};
+/* ===== ETAPA 22: "Como fazer" (animação início/fim + músculo destacado) ===== */
+S.how=null;S.howPause=false;
+(function(){var st=document.createElement('style');st.textContent=
+'.how{position:fixed;inset:0;z-index:40;background:var(--bg);overflow:auto;padding:max(12px,env(safe-area-inset-top,0px)) 16px max(24px,env(safe-area-inset-bottom,0px))}.how .hb{max-width:560px;margin:0 auto}'+
+'.how .hh2{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:4px 0 12px}.how .hh2 h2{margin:0;font-size:20px}.how .hh2 button{width:44px;height:44px;border-radius:12px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-size:20px;flex:none}'+
+'.hfig{position:relative;aspect-ratio:3/2;border-radius:14px;overflow:hidden;border:1px solid var(--line);background-color:var(--surface);background-size:400% 600%}.hfig i{position:absolute;inset:0;background-size:400% 600%;animation:hwf 2.4s ease-in-out infinite}.hfig.pz i{animation-play-state:paused;opacity:0}'+
+'@keyframes hwf{0%,30%{opacity:0}48%,82%{opacity:1}100%{opacity:0}}@media (prefers-reduced-motion:reduce){.hfig i{animation:none;opacity:0}}'+
+'.how .card{margin:0 0 12px}.how .ins{margin:6px 0 0;padding-left:20px}.how .ins li{margin:0 0 6px;font-size:14px;line-height:1.4}.how .src{font-size:11px;color:var(--muted);margin-top:8px}.xlink.how-b{font-weight:700}';
+document.head.appendChild(st)})();
+function howFig(it){
+  var c=it.e.p%4,r=Math.floor(it.e.p/4),pos='background-position:'+(c*100/3)+'% '+(r*100/5)+'%';
+  return '<div class="hfig'+(S.howPause?' pz':'')+'" role="img" aria-label="Animação do exercício '+esc(it.n)+': posição inicial e final" style="background-image:url(s'+it.e.sh+'.jpg);'+pos+'"><i style="background-image:url(t'+it.e.sh+'.jpg);'+pos+'"></i></div>';
+}
+function howHtml(){
+  var it=allLib().filter(function(o){return o.id===S.how})[0];if(!it)return '';
+  var h='<div class="how" role="dialog" aria-label="Como fazer"><div class="hb"><div class="hh2"><h2>'+esc(it.n)+'</h2><button data-act="howx" aria-label="Fechar">×</button></div>';
+  if(it.e){
+    h+='<div class="card">'+howFig(it)+'<div class="pad"><div class="acts"><button class="chip" data-act="howplay" aria-pressed="'+!S.howPause+'">'+(S.howPause?'▶ Reproduzir':'❚❚ Pausar')+'</button></div><div class="sub">A imagem alterna entre a posição inicial e a final.</div></div></div>';
+  }
+  h+='<div class="card"><div class="pad"><div class="kicker">Músculo trabalhado</div>'+mapSvg('',it.pg,it.sg,false)+'<div class="sub">Rosa forte: principal. Rosa claro: secundário.</div>';
+  if(it.e)h+='<div class="sub"><b>Principal:</b> '+it.e.pm.map(function(m){return MUSC[m]||m}).join(', ')+'<br><b>Secundários:</b> '+(it.e.sm.length?it.e.sm.map(function(m){return MUSC[m]||m}).join(', '):'—')+'</div>';
+  var care=careOf(it);if(care.length)h+='<div class="note" style="margin:0">Você marcou atenção em: '+care.map(function(g){return MGN[g]}).join(', ')+'. Confirme com seu profissional antes de fazer.</div>';
+  h+='</div></div>';
+  if(it.e&&it.e.ins&&it.e.ins.length)h+='<div class="card"><div class="pad"><div class="kicker">Passo a passo (inglês)</div><ol class="ins">'+it.e.ins.map(function(s){return '<li>'+esc(s)+'</li>'}).join('')+'</ol></div></div>';
+  h+='<div class="acts"><button class="btn block" data-act="howlib" data-id="'+esc(it.id)+'">Abrir na biblioteca</button></div><div class="src">Imagens e instruções: <a href="https://github.com/yuhonas/free-exercise-db" target="_blank" rel="noopener">free-exercise-db</a> (domínio público). Conteúdo informativo; na dúvida ou com dor, fale com seu instrutor.</div></div></div>';
+  return h;
+}
+var _rd22=render;
+render=function(){_rd22();var old=document.getElementById('how-ov');if(old)old.remove();
+  if(S.how){var d=document.createElement('div');d.id='how-ov';d.innerHTML=howHtml();document.body.appendChild(d);document.documentElement.style.overflow='hidden'}
+  else document.documentElement.style.overflow=''};
+document.addEventListener('click',function(ev){
+  var b=ev.target.closest&&ev.target.closest('#how-ov [data-act]');if(!b)return;var a=b.dataset.act;ev.stopPropagation();
+  if(a==='howx'){S.how=null;render()}
+  else if(a==='howplay'){S.howPause=!S.howPause;var f=document.querySelector('#how-ov .hfig');if(f)f.classList.toggle('pz',S.howPause);b.textContent=S.howPause?'▶ Reproduzir':'❚❚ Pausar';b.setAttribute('aria-pressed',String(!S.howPause))}
+  else if(a==='howlib'){S.lib.open=b.dataset.id;S.view='lib';S.ficha=null;S.how=null;render();window.scrollTo(0,0)}
+},true);
+var _fc22=fatClick;
+fatClick=function(a,b){if(a==='how'){S.how=b.dataset.id;S.howPause=false;render();return true}return _fc22(a,b)};
+/* na biblioteca, a imagem grande também anima */
+var _th22=thumb;
+thumb=function(it,cls){
+  if(!(cls&&/\bbig\b/.test(cls))||!it.e)return _th22(it,cls);
+  var c=it.e.p%4,r=Math.floor(it.e.p/4),pos='background-position:'+(c*100/3)+'% '+(r*100/5)+'%';
+  return '<div class="th big hfig" role="img" aria-label="Animação do exercício '+esc(it.n)+'" style="background-image:url(s'+it.e.sh+'.jpg);'+pos+'"><i style="background-image:url(t'+it.e.sh+'.jpg);'+pos+'"></i></div>';
 };
 
 render();
