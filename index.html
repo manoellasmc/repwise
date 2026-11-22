@@ -2,7 +2,7 @@
 <html lang="pt-BR"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<script>window.APPV="21/11 23:49 UTC"</script>
+<script>window.APPV="22/11 01:26 UTC"</script>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/icon-32.png">
 <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
@@ -2220,6 +2220,68 @@ var _fc23=fatClick;
 fatClick=function(a,b){
   if(a==='col'){var k=b.dataset.v,cur=S.col[k]===undefined?(k==='prs'):!!S.col[k];S.col[k]=!cur;lsSet('pw2-col',S.col);render();return true}
   return _fc23(a,b);
+};
+/* ---- add24: Cardio como segundo treino do dia ---- */
+MET.rope=11.8;
+S.cardio=Object.assign({min:30},lsGet('pw2-cardio')||{});
+var CARDIO=[
+  {k:'bike',label:'Bike',name:'Bike',load:'esforço moderado',kcal:function(m,kg){return kc(MET.bike,kg,m)}},
+  {k:'run',label:'Corrida leve',name:'Corrida leve (esteira)',load:'7 km/h',kcal:function(m,kg){return kc(metWalk(7,0),kg,m)}},
+  {k:'walk',label:'Caminhada rápida',name:'Esteira · caminhada rápida',load:'5,5 km/h',kcal:function(m,kg){return kc(metWalk(5.5,0),kg,m)}},
+  {k:'rope',label:'Pular corda',name:'Pular corda',load:'ritmo moderado',kcal:function(m,kg){return kc(MET.rope,kg,m)}}
+];
+var _ek24=exKcal;
+exKcal=function(x,en,kg){
+  if(/corda/.test(cdNorm(x))){
+    var t=String(x.sets||'')+' '+String(x.load||''),min=en&&en.min!==''&&en.min!=null?+pnum(en.min):txtMin(t);
+    return {kcal:kc(MET.rope,kg,min||0),min:min||0};
+  }
+  return _ek24(x,en,kg);
+};
+function isCardioSes(s){return !!s&&s.fichaId==='cardio'}
+function cardioSid(){var b=todayIso+'_cardio',sid=b,n=1;while(S.ses[sid]&&S.ses[sid].fin){n++;sid=b+n}return sid}
+function startCardio(k){
+  var c=CARDIO.filter(function(q){return q.k===k})[0];if(!c)return;
+  var sid=cardioSid(),x={id:'cardio-'+k,name:c.name,sets:S.cardio.min+' min',load:c.load,rest:'',mg:'aerobio'};
+  if(!S.ses[sid]||S.ses[sid].ex[0].id!==x.id){S.ses[sid]={date:todayIso,fichaId:'cardio',fn:'Cardio · '+c.label,w:'',ex:[x],entries:{},fin:false};saveSes(sid)}
+  S.active={sid:sid,i:0};S.summary=null;render();window.scrollTo(0,0);
+}
+function cardioCard(){
+  var kg=kgNow(),m=S.cardio.min;
+  var h='<div class="card"><div class="pad cmp"><div class="kicker">Cardio · treino separado</div><div class="sub">Para fazer em outro horário, fora da musculação.</div>';
+  h+='<div class="hrow" style="align-items:center"><span class="sub" style="flex:1">Tempo: <b>'+m+' min</b></span><button class="btn ic" data-act="cdmin" data-v="-5" aria-label="Menos 5 minutos">−</button><button class="btn ic" data-act="cdmin" data-v="5" aria-label="Mais 5 minutos">+</button></div>';
+  CARDIO.forEach(function(c){
+    var q=kg?c.kcal(m,kg):0;
+    h+='<button class="btn block" data-act="cdgo" data-v="'+c.k+'">'+esc(c.label)+(q>0?' <small style="opacity:.75;font-size:inherit;font-weight:500">· ≈ '+kcRound(q)+' kcal</small>':'')+'</button>';
+  });
+  h+='<div class="sub">Calorias acima do repouso, com erro de 20 a 30%. Corrida e corda têm impacto no joelho: comece curto.</div></div></div>';
+  return h;
+}
+var _vh24=viewHoje;
+viewHoje=function(){
+  var h=_vh24();
+  if((S.sel||todayIso)!==todayIso)return h;
+  var i=h.indexOf('<div class="card hero">');if(i<0)return h+cardioCard();
+  var j=h.indexOf('<div class="card',i+20);
+  return j<0?h+cardioCard():h.slice(0,j)+cardioCard()+h.slice(j);
+};
+function cardioWeek(){
+  var from=weekRange(),kg=kgNow(),min=0,k=0,n=0;
+  sesIds().forEach(function(id){var s=S.ses[id];if(!isCardioSes(s)||s.date<from||sesDone(id)<=0)return;var f=sesFicha(s);if(!f)return;var q=fichaKcal(f,kg,s);min+=q.min;k+=q.kcal;n++});
+  return {min:min,kcal:k,n:n};
+}
+var _vs24=viewSaude;
+viewSaude=function(){
+  var w=cardioWeek(),r=_vs24();
+  if(!w.n)return r;
+  var card='<div class="card"><div class="pad cmp"><div class="kicker">Cardio · esta semana</div><div class="stat"><div><b>'+w.n+'</b><span>treino'+(w.n===1?'':'s')+' de cardio</span></div><div><b>'+Math.round(w.min)+' min</b><span>≈ '+kcRound(w.kcal)+' kcal</span></div></div></div></div>';
+  return r+card;
+};
+var _fc24=fatClick;
+fatClick=function(a,b){
+  if(a==='cdmin'){S.cardio.min=Math.max(5,Math.min(120,S.cardio.min+(+b.dataset.v)));lsSet('pw2-cardio',S.cardio);render();return true}
+  if(a==='cdgo'){startCardio(b.dataset.v);return true}
+  return _fc24(a,b);
 };
 
 render();
