@@ -2,7 +2,7 @@
 <html lang="pt-BR"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<script>window.APPV="22/11 01:26 UTC"</script>
+<script>window.APPV="23/11 16:10 UTC"</script>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/icon-32.png">
 <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
@@ -2282,6 +2282,34 @@ fatClick=function(a,b){
   if(a==='cdmin'){S.cardio.min=Math.max(5,Math.min(120,S.cardio.min+(+b.dataset.v)));lsSet('pw2-cardio',S.cardio);render();return true}
   if(a==='cdgo'){startCardio(b.dataset.v);return true}
   return _fc24(a,b);
+};
+/* ---- add25: progressão em escada (10 → 12 → 15 reps; 2 treinos em 15 → sobe a carga) ---- */
+var _sg25=suggest;
+suggest=function(name,tr,nw,exceptSid){
+  var base=_sg25(name,tr,nw,exceptSid),hs=[];
+  sesIds().forEach(function(id){
+    if(hs.length>=3||id===exceptSid)return;var en=S.ses[id].entries||{};
+    for(var k in en){if(en[k].n===name){var ds=doneSets(en[k]);if(ds.length){hs.push({date:S.ses[id].date,sets:working(ds),nw:en[k].nw||0});break}}}
+  });
+  if(!hs.length)return base;
+  var L=hs[0],kgL=maxKg(L.sets);if(!kgL)return base;
+  var need=nw||L.nw||L.sets.length,dt=fmt(L.date,{day:'2-digit',month:'2-digit'});
+  var minR=function(h){return h.sets.reduce(function(a,q){return Math.min(a,q.reps)},999)};
+  var reached=function(h,r){return h.sets.length>=need&&minR(h)>=r};
+  var sameKg=function(h){return maxKg(h.sets)===kgL};
+  if(L.sets.length<need)return {t:'keep',kg:kgL,text:'Na última vez ('+dt+') você fez '+L.sets.length+' de '+need+' séries a '+nf(kgL)+' kg. Complete as '+need+' séries com a mesma carga antes de pensar em subir.'};
+  if(reached(L,15)){
+    var n=0;for(var i=0;i<hs.length;i++){if(sameKg(hs[i])&&reached(hs[i],15))n++;else break}
+    if(n>=2){var inc=incFor(name,kgL);
+      return {t:'up',kg:kgL+inc,inc:inc,text:'Você fez 15 reps ou mais em todas as séries a '+nf(kgL)+' kg em '+n+' treinos seguidos. Hora de subir para '+nf(kgL+inc)+' kg (+'+nf(inc)+') e voltar para 10 reps. Ajuste ao que existe na sua academia.'};}
+    return {t:'keep',kg:kgL,tgt:15,text:'Na última vez ('+dt+') você fez 15 reps em todas as séries a '+nf(kgL)+' kg. Repita mais 1 treino com 15 reps; depois disso, suba a carga.'};
+  }
+  if(reached(L,12))return {t:'keep',kg:kgL,tgt:15,text:'Na última vez ('+dt+') você fez 12 reps ou mais em todas as séries a '+nf(kgL)+' kg. Mantenha a carga e busque 15 reps em todas as séries.'};
+  if(reached(L,10))return {t:'keep',kg:kgL,tgt:12,text:'Na última vez ('+dt+') você fez 10 reps ou mais em todas as séries a '+nf(kgL)+' kg. Mantenha a carga e busque 12 reps em todas as séries.'};
+  var low=L.sets.reduce(function(a,q){return Math.min(a,q.reps)},999);
+  if(hs.length>1&&sameKg(hs[1])&&!reached(hs[1],10))
+    return {t:'review',kg:kgL,text:'Nas últimas 2 sessões a '+nf(kgL)+' kg você não chegou a 10 reps em todas as séries. Mantenha a carga e, se a execução estiver comprometida, reduza 5 a 10%.'};
+  return {t:'keep',kg:kgL,tgt:10,text:'Mantenha '+nf(kgL)+' kg e busque 10 reps em todas as séries (a menor foi '+low+').'};
 };
 
 render();
