@@ -2,7 +2,7 @@
 <html lang="pt-BR"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<script>window.APPV="23/11 16:27 UTC"</script>
+<script>window.APPV="23/11 16:35 UTC"</script>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/icon-32.png">
 <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
@@ -2411,6 +2411,97 @@ viewActive=function(){
     return h.slice(0,b)+' · <b style="color:var(--accent)">'+t+'</b>'+h.slice(b);
   }catch(e){return h}
 };
+/* ---- add29: ciclo menstrual + "dia mais pesado" (carga reduzida sem atrapalhar a progressão) ---- */
+S.cy=Object.assign({on:false,start:'',len:28,per:5},lsGet('pw2-cycle')||{});
+function saveCy(){lsSet('pw2-cycle',S.cy)}
+function dayDiff(a,b){return Math.round((new Date(b+'T12:00:00')-new Date(a+'T12:00:00'))/864e5)}
+function cyInfo(date){
+  if(!S.cy.on||!S.cy.start)return null;
+  var L=+S.cy.len||28,d=dayDiff(S.cy.start,date);if(isNaN(d)||d<0)return null;
+  var day=d%L+1,per=+S.cy.per||5,ov=L-14,ph;
+  if(day<=per)ph='menstruação';else if(day<ov-1)ph='fase folicular';else if(day<=ov+1)ph='meio do ciclo (ovulação estimada)';else ph='fase lútea (pré-menstrual)';
+  return {day:day,len:L,ph:ph,late:d>=L+7};
+}
+/* sessões marcadas como "dia mais pesado" ficam fora da progressão e da "última vez" */
+var _lo29=lastOf;
+lastOf=function(name,exceptSid){
+  var ids=sesIds();
+  for(var i=0;i<ids.length;i++){
+    if(ids[i]===exceptSid||S.ses[ids[i]].lite)continue;var en=S.ses[ids[i]].entries||{};
+    for(var k in en){if(en[k].n===name){var ds=doneSets(en[k]);if(ds.length)return {sid:ids[i],date:S.ses[ids[i]].date,sets:ds}}}
+  }return null;
+};
+var _sg29=suggest;
+suggest=function(name,tr,nw,exceptSid){
+  var saved={},ids=sesIds(),r;
+  ids.forEach(function(id){if(S.ses[id].lite&&id!==exceptSid){saved[id]=S.ses[id];}});
+  var keys=Object.keys(saved);
+  keys.forEach(function(id){delete S.ses[id]});
+  try{r=_sg29(name,tr,nw,exceptSid)}finally{keys.forEach(function(id){S.ses[id]=saved[id]})}
+  return r;
+};
+function liteDays(){var a=[];sesIds().forEach(function(id){var s=S.ses[id];if(s.lite&&s.cyd)a.push(s.cyd)});return a}
+function cyDist(a,b,L){var d=Math.abs(a-b);return Math.min(d,L-d)}
+function cyHint(){
+  var ci=cyInfo(todayIso);if(!ci)return '';
+  var ld=liteDays();if(ld.length<2)return '';
+  var near=ld.some(function(d){return cyDist(d,ci.day,ci.len)<=1});if(!near)return '';
+  return 'Hoje é o dia '+ci.day+' do ciclo. Nas vezes em que você marcou “dia mais pesado”, era por volta dos dias '+ld.slice().sort(function(a,b){return a-b}).filter(function(v,i,a){return a.indexOf(v)===i}).join(', ')+'. Se precisar, baixe a carga; você decide.';
+}
+function liteBox(){
+  var s=S.ses[S.active.sid];if(!s)return '';
+  var ci=cyInfo(s.date||todayIso),h='<div class="card" style="margin:8px 0"><div class="pad cmp">';
+  if(ci)h+='<div class="sub">Ciclo: dia '+ci.day+' · '+esc(ci.ph)+' (estimativa)</div>';
+  var ht=s.lite?'':cyHint();if(ht)h+='<div class="note" style="margin:6px 0">'+esc(ht)+'</div>';
+  h+='<button class="btn block'+(s.lite?' pri':'')+'" data-act="lite" aria-pressed="'+(!!s.lite)+'">'+(s.lite?'Dia mais pesado: ligado (toque para desligar)':'Hoje estou mais pesada: vou reduzir a carga')+'</button>';
+  if(s.lite)h+='<div class="sub" style="margin-top:6px">Pode baixar a carga sem problema. Este treino não conta para a progressão: nas próximas vezes o app compara com seu último treino normal.</div>';
+  return h+'</div></div>';
+}
+var _va29=viewActive;
+viewActive=function(){
+  var h=_va29();
+  try{
+    if(!S.active)return h;var s=S.ses[S.active.sid];if(!s||s.fichaId==='cardio')return h;
+    var i=h.indexOf('<div class="card"><div class="pad"><h2 class="big">');if(i<0)return h;
+    if(s.lite){var a=h.indexOf('<div class="sug">'),b=a<0?-1:h.indexOf('</div>',h.indexOf('</span>',a));if(a>=0&&b>0)h=h.slice(0,a)+'<div class="sug"><b>Dia mais pesado</b><span class="why">Sem carga sugerida hoje. Use o peso que estiver bom para você.</span></div>'+h.slice(b+6)}
+    i=h.indexOf('<div class="card"><div class="pad"><h2 class="big">');
+    return h.slice(0,i)+liteBox()+h.slice(i);
+  }catch(e){return h}
+};
+function cyCard(){
+  var c=S.cy,h='<div class="card"><div class="pad cmp"><div class="kicker">Ciclo menstrual</div>';
+  h+='<div class="sub">Opcional e só neste aparelho. Serve para você lembrar de baixar a carga quando precisar. O app não decide nada sozinho.</div>';
+  h+='<button class="btn block'+(c.on?' pri':'')+'" data-act="cyon" aria-pressed="'+(!!c.on)+'">'+(c.on?'Acompanhar ciclo: ligado':'Ligar acompanhamento do ciclo')+'</button>';
+  if(c.on){
+    h+='<label class="field">PRIMEIRO DIA DA ÚLTIMA MENSTRUAÇÃO<input type="date" data-cy="start" value="'+esc(c.start)+'" max="'+todayIso+'"></label>';
+    h+='<div class="hrow"><button class="btn" data-act="cytoday">Começou hoje</button></div>';
+    h+='<div class="hrow" style="align-items:center"><span class="sub" style="flex:1">Duração do ciclo: <b>'+c.len+' dias</b></span><button class="btn ic" data-act="cylen" data-v="-1" aria-label="Menos um dia">−</button><button class="btn ic" data-act="cylen" data-v="1" aria-label="Mais um dia">+</button></div>';
+    var ci=cyInfo(todayIso);
+    if(ci){h+='<div class="sub">Hoje: <b>dia '+ci.day+'</b> de '+ci.len+' · '+esc(ci.ph)+'. As fases são estimativas por conta de calendário, e seu corpo pode variar.</div>';if(ci.late)h+='<div class="note">Já passou um ciclo inteiro desde a data registrada. Atualize quando a próxima menstruação vier.</div>'}
+    else h+='<div class="sub">Informe a data para ver o dia do ciclo.</div>';
+    var ld=liteDays();
+    h+='<div class="sub">Treinos marcados como “dia mais pesado”: <b>'+sesIds().filter(function(id){return S.ses[id].lite}).length+'</b>'+(ld.length?' · dias do ciclo: '+ld.slice().sort(function(a,b){return a-b}).join(', '):'')+'.</div>';
+    h+='<button class="xlink" data-act="cyoff">Apagar dados do ciclo</button>';
+  }
+  return h+'</div></div>';
+}
+var _vs29=viewSaude;
+viewSaude=function(){var r=_vs29(),k=r.indexOf('<div class="card">');return k<0?r+cyCard():r.slice(0,k)+cyCard()+r.slice(k)};
+var _fc29=fatClick;
+fatClick=function(a,b){
+  if(a==='lite'){var s=S.ses[S.active&&S.active.sid];if(s){s.lite=!s.lite;if(s.lite){var ci=cyInfo(s.date||todayIso);if(ci)s.cyd=ci.day;else delete s.cyd}else delete s.cyd;saveSes(S.active.sid);render()}return true}
+  if(a==='cyon'){S.cy.on=!S.cy.on;saveCy();render();return true}
+  if(a==='cytoday'){S.cy.start=todayIso;saveCy();render();return true}
+  if(a==='cylen'){S.cy.len=Math.max(21,Math.min(45,(+S.cy.len||28)+(+b.dataset.v)));saveCy();render();return true}
+  if(a==='cyoff'){S.cy={on:false,start:'',len:28,per:5};saveCy();render();return true}
+  return _fc29(a,b);
+};
+document.addEventListener('change',function(ev){var t=ev.target;if(t&&t.dataset&&t.dataset.cy==='start'){S.cy.start=t.value||'';saveCy();render()}});
+/* identifica treinos mais leves no histórico */
+var _sd29=sessDetail;
+sessDetail=function(id){var h=_sd29(id);return S.ses[id]&&S.ses[id].lite?h.replace('<div class="kicker">Como foi o treino</div>','<div class="kicker">Como foi o treino · dia mais pesado (carga reduzida)</div>'):h};
+var _hc29=hcCard;
+hcCard=function(id){var h=_hc29(id);return S.ses[id]&&S.ses[id].lite?h.replace('<div class="kicker">Treino realizado</div>','<div class="kicker">Treino realizado · dia mais pesado (carga reduzida)</div>'):h};
 
 render();
 
