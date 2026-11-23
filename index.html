@@ -2,7 +2,7 @@
 <html lang="pt-BR"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<script>window.APPV="23/11 17:31 UTC"</script>
+<script>window.APPV="23/11 18:02 UTC"</script>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/icon-32.png">
 <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
@@ -2553,6 +2553,17 @@ entryPatch=function(sid,x,patch){
   }catch(err){}
   return e;
 };
+/* corrige treinos já salvos: o texto do cardio é sempre refeito a partir de tempo/velocidade/inclinação */
+function syncCdTxt(){
+  try{Object.keys(S.ses).forEach(function(id){
+    var s=S.ses[id];if(!s||s.circ)return;var en=s.entries||{};
+    Object.keys(en).forEach(function(k){var e=en[k];
+      if(e&&e.cd&&!doneSets(e).length&&(e.g==='aerobio'||/esteira|corrida|bike|bicicleta|eliptic|escada|corda/i.test(e.n||''))&&(e.min||e.kmh)){var t=cdTxt(e);if(t&&t!==e.txt)e.txt=t}});
+  })}catch(x){}
+}
+var _r30=render;
+render=function(){syncCdTxt();return _r30.apply(this,arguments)};
+syncCdTxt();
 
 render();
 
