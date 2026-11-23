@@ -2,7 +2,7 @@
 <html lang="pt-BR"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<script>window.APPV="23/11 16:24 UTC"</script>
+<script>window.APPV="23/11 16:27 UTC"</script>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/icon-32.png">
 <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
@@ -591,7 +591,6 @@ function viewActive(){
   h+='<div class="dots">'+f.ex.map(function(e,k){var ee=ses.entries&&ses.entries[e.id];return '<i class="'+(k===i?'c':(ee&&(doneSets(ee).length||ee.cd)?'d':(ee&&ee.skip?'sk':'')))+'"></i>'}).join('')+'</div>';
   h+='<div class="card"><div class="pad"><h2 class="big">'+esc(x.name)+'</h2>'+(exMg(x)?'<div><span class="mg">'+MGN[exMg(x)]+'</span></div>':'')+'<div class="sub">'+[x.sets,x.load,x.rest?'descanso '+x.rest:''].filter(Boolean).map(esc).join(' · ')+'</div>';
   if(last)h+='<div class="last">Última vez ('+fmt(last.date,{day:'2-digit',month:'2-digit'})+'): '+last.sets.map(function(s){return nf(s.kg)+'×'+s.reps}).join(' · ')+'</div>';
-  if(x.ref)h+='<div class="last">Referência na planilha: '+esc(x.ref)+'</div>';
   if(en.skip){h+=skipBanner()}else if(plan.check){
     h+='<div class="sub" style="margin:10px 0">'+esc(x.sets||'Marque quando concluir.')+'</div><button class="btn block '+(en.cd?'':'pri')+'" data-act="cardio">'+(en.cd?'Concluído · toque para desfazer':'Marcar como concluído')+'</button>';
   }else if(plan.cardio!=null){
