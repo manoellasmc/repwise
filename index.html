@@ -2,7 +2,7 @@
 <html lang="pt-BR"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<script>window.APPV="23/11 16:17 UTC"</script>
+<script>window.APPV="23/11 16:24 UTC"</script>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/icon-32.png">
 <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
@@ -563,7 +563,7 @@ function viewFichaDetail(f){
   f.ex.forEach(function(x,i){
     if(S.form&&S.form.mode==='edit'&&S.form.id===x.id){h+='<li>'+formHtml(x)+'</li>';return}
     var g=exMg(x);
-    h+='<li class="ex"><div class="tx"><div class="nm">'+esc(x.name)+'</div><div class="rx">'+[x.sets,x.load,x.rest?'descanso '+x.rest:''].filter(Boolean).map(esc).join(' · ')+'</div>'+(g?'<span class="mg">'+MGN[g]+'</span>':'<span class="mg" style="background:var(--bg);color:var(--muted)">sem grupo</span>')+(function(){var m=x.lib?{id:x.lib}:libOf(x.name);return m&&LIBIDX[m.id]?'<div><button class="xlink" data-act="how" data-id="'+esc(m.id)+'">▶ '+(m.sim?'Como fazer (exercício parecido)':'Como fazer')+'</button></div>':''})()+((g&&g!=='aerobio'&&!x.chk)?'<div><button class="xlink" data-act="swap" data-id="'+x.id+'">'+(S.swap===x.id?'fechar trocas':'trocar exercício')+'</button></div>':'')+'</div>'+
+    h+='<li class="ex"><div class="tx"><div class="nm">'+esc(x.name)+'</div><div class="rx">'+[x.sets,x.load,x.rest?'descanso '+x.rest:''].filter(Boolean).map(esc).join(' · ')+exKTag(f,x,null)+'</div>'+(g?'<span class="mg">'+MGN[g]+'</span>':'<span class="mg" style="background:var(--bg);color:var(--muted)">sem grupo</span>')+(function(){var m=x.lib?{id:x.lib}:libOf(x.name);return m&&LIBIDX[m.id]?'<div><button class="xlink" data-act="how" data-id="'+esc(m.id)+'">▶ '+(m.sim?'Como fazer (exercício parecido)':'Como fazer')+'</button></div>':''})()+((g&&g!=='aerobio'&&!x.chk)?'<div><button class="xlink" data-act="swap" data-id="'+x.id+'">'+(S.swap===x.id?'fechar trocas':'trocar exercício')+'</button></div>':'')+'</div>'+
       '<button class="ic" data-act="up" data-id="'+x.id+'" aria-label="Subir" '+(i===0?'disabled':'')+'>↑</button><button class="ic" data-act="dn" data-id="'+x.id+'" aria-label="Descer" '+(i===f.ex.length-1?'disabled':'')+'>↓</button>'+
       '<button class="ic" data-act="edit" data-id="'+x.id+'" aria-label="Editar">✎</button>'+
       '<button class="ic" data-act="del" data-id="'+x.id+'" aria-label="Remover" style="'+(S.confirm===x.id?'border-color:var(--bad);color:var(--bad)':'')+'">'+(S.confirm===x.id?'?':'×')+'</button>'+(S.swap===x.id&&exMg(x)&&exMg(x)!=='aerobio'&&!x.chk?'<div style="flex:0 0 100%">'+swapPanel(x)+'</div>':'')+'</li>';
@@ -1116,7 +1116,7 @@ function viewToday(){
     var logged=!!(s.entries&&s.entries[x.id]&&(doneSets(s.entries[x.id]).length||s.entries[x.id].cd));
     if(T.form&&T.form.id===x.id){h+='<li>'+tdForm(x)+'</li>';return}
     var g=exMg(x);
-    h+='<li class="ex"><div class="tx"><div class="nm">'+esc(x.name)+(logged?' <span class="mg">feito</span>':'')+'</div><div class="rx">'+[x.sets,x.load,x.rest?'descanso '+x.rest:''].filter(Boolean).map(esc).join(' · ')+'</div>'+
+    h+='<li class="ex"><div class="tx"><div class="nm">'+esc(x.name)+(logged?' <span class="mg">feito</span>':'')+'</div><div class="rx">'+[x.sets,x.load,x.rest?'descanso '+x.rest:''].filter(Boolean).map(esc).join(' · ')+exKTag({id:s.fichaId,name:s.fn,ex:ex},x,null)+'</div>'+
      ((g&&g!=='aerobio'&&!x.chk)?'<div><button class="xlink" data-act="tdswap" data-id="'+x.id+'">'+(T.swap===x.id?'fechar trocas':'trocar exercício')+'</button></div>':'')+'</div>'+
      '<button class="ic" data-act="tdup" data-id="'+x.id+'" aria-label="Subir" '+(i===0?'disabled':'')+'>↑</button><button class="ic" data-act="tddn" data-id="'+x.id+'" aria-label="Descer" '+(i===ex.length-1?'disabled':'')+'>↓</button>'+
      '<button class="ic" data-act="tdedit" data-id="'+x.id+'" aria-label="Editar">✎</button>'+
@@ -1241,7 +1241,7 @@ function sessDetail(id){
   Object.keys(en).forEach(function(k){sets+=doneSets(en[k]).length});
   h+='<div class="card"><div class="pad"><div class="kicker">Como foi o treino</div><h2>'+esc(sesTitle(s))+'</h2><div class="sub">'+fmt(s.date,{weekday:'long',day:'numeric',month:'long'})+' · '+sesDone(id)+' exerc. · '+sets+' séries · '+nf(sesVolume(id))+' kg de volume</div>';
   Object.keys(en).forEach(function(k){var e=en[k],ds=doneSets(e);if(!ds.length&&!e.cd)return;
-    h+='<div><b>'+esc(e.n)+'</b>'+(ds.length?'<div class="chips" style="margin-top:4px">'+ds.map(function(q){return '<span class="chip st">'+nf(q.kg)+' kg × '+q.reps+'</span>'}).join('')+'</div>':'<div class="sub">'+(e.min?esc(e.min)+' min':'concluído')+'</div>')+(e.note?'<div class="sub">“'+esc(e.note)+'”</div>':'')+'</div>'});
+    h+='<div><b>'+esc(e.n)+'</b>'+exKTagS(s,k)+(ds.length?'<div class="chips" style="margin-top:4px">'+ds.map(function(q){return '<span class="chip st">'+nf(q.kg)+' kg × '+q.reps+'</span>'}).join('')+'</div>':'<div class="sub">'+(e.min?esc(e.min)+' min':'concluído')+'</div>')+(e.note?'<div class="sub">“'+esc(e.note)+'”</div>':'')+'</div>'});
   h+='<div class="acts"><button class="btn sm" data-act="seesum" data-id="'+id+'">Comparar com anterior</button><button class="btn sm" data-act="start" data-id="'+esc(s.fichaId)+'" data-date="'+s.date+'">Continuar/editar</button><button class="btn sm dng" data-act="delses" data-id="'+id+'">'+(S.confirm===id?'Confirmar exclusão':'Excluir treino')+'</button></div></div></div>';
   return h;
 }
@@ -2123,7 +2123,7 @@ function hcCard(id){
   if(s.circ&&s.circ.d){var rr=Object.keys(s.circ.d).length;h+='<div class="ex"><b>Circuito</b><div class="sub">'+rr+' rodada'+(rr===1?'':'s')+' registrada'+(rr===1?'':'s')+'</div></div>'}
   var order=f?f.ex.map(function(x){return x.id}):Object.keys(en);
   order.forEach(function(k){var e=en[k];if(!e)return;var ds=doneSets(e);if(!ds.length&&!e.cd)return;
-    h+='<div class="ex"><b>'+esc(e.n)+'</b>'+(ds.length?'<div class="chips" style="margin-top:4px">'+ds.map(function(q){return '<span class="chip">'+nf(q.kg)+(q.m>1?' kg ×'+q.m:' kg')+' × '+q.reps+'</span>'}).join('')+'</div>'+(ds[0].m>1?'<div class="sub">Peso por halter. Total movido: '+nf(vol(ds))+' kg.</div>':''):'<div class="sub">'+(e.min?esc(e.min)+' min':'Concluído')+(e.kmh?' · '+esc(e.kmh)+' km/h':'')+(e.inc?' · inclinação '+esc(e.inc):'')+'</div>')+(e.note?'<div class="sub">“'+esc(e.note)+'”</div>':'')+'</div>'});
+    h+='<div class="ex"><b>'+esc(e.n)+'</b>'+exKTagS(s,k)+(ds.length?'<div class="chips" style="margin-top:4px">'+ds.map(function(q){return '<span class="chip">'+nf(q.kg)+(q.m>1?' kg ×'+q.m:' kg')+' × '+q.reps+'</span>'}).join('')+'</div>'+(ds[0].m>1?'<div class="sub">Peso por halter. Total movido: '+nf(vol(ds))+' kg.</div>':''):'<div class="sub">'+(e.min?esc(e.min)+' min':'Concluído')+(e.kmh?' · '+esc(e.kmh)+' km/h':'')+(e.inc?' · inclinação '+esc(e.inc):'')+'</div>')+(e.note?'<div class="sub">“'+esc(e.note)+'”</div>':'')+'</div>'});
   h+='<div class="acts" style="margin-top:8px"><button class="btn sm" data-act="seesum" data-id="'+id+'">Comparar com anterior</button><button class="btn sm dng" data-act="delses" data-id="'+id+'">'+(S.confirm===id?'Confirmar exclusão':'Excluir treino')+'</button></div></div></div>';
   return h;
 }
@@ -2365,6 +2365,53 @@ document.addEventListener('click',function(ev){
   if(a==='skipno'){ev.stopPropagation();S.skipAsk=false;render();return}
   if(a==='skipyes'){ev.stopPropagation();S.skipAsk=false;skClick('skipex');return}
 },true);
+/* ---- add28: calorias estimadas por exercício ---- */
+function exKMap(f,ses,kg){
+  var o={};
+  try{
+    if(!f||!kg||!f.ex||isCircuit(f))return o;
+    var list=[],tot=0;
+    f.ex.forEach(function(x){
+      var en=ses&&ses.entries&&ses.entries[x.id];
+      if(ses&&!(en&&(en.cd||doneSets(en).length)))return;
+      if(x.chk)return;
+      var q=exKcal(x,ses?en:null,kg);
+      if(exMg(x)==='aerobio'||/esteira|bike|bicicleta|corda/.test(cdNorm(x)))o[x.id]=q.kcal;
+      else list.push({x:x,q:q});
+    });
+    var n=list.length,sw=n>1?Math.max(0,+S.fat.swap)*(n-1)/n:0;
+    list.forEach(function(r){o[r.x.id]=kc(MET.str,kg,r.q.min+sw)});
+    Object.keys(o).forEach(function(k){tot+=o[k]});
+    var T=fichaKcal(f,kg,ses||null).kcal;
+    if(tot>0&&T>0&&isFinite(T)){var sc=T/tot;Object.keys(o).forEach(function(k){o[k]*=sc})}
+  }catch(e){return {}}
+  return o;
+}
+function exKTxt(v){return v>=3?'≈ '+kcRound(Math.max(v,5))+' kcal':''}
+function exKTag(f,x,ses){
+  var kg=kgNow();if(!kg)return '';
+  var t=exKTxt(exKMap(f,ses,kg)[x.id]||0);
+  return t?' <span class="kx" style="color:var(--accent);font-weight:600;white-space:nowrap">· '+t+'</span>':'';
+}
+function exKTagS(s,k){
+  var kg=kgNow();if(!kg||!s)return '';
+  var f=sesFicha(s),t=exKTxt(exKMap(f,s,kg)[k]||0);
+  return t?' <span class="kx" style="color:var(--accent);font-weight:600;white-space:nowrap;font-size:13px">· '+t+'</span>':'';
+}
+var _va28=viewActive;
+viewActive=function(){
+  var h=_va28();
+  try{
+    if(!S.active)return h;
+    var ses=S.ses[S.active.sid],f=ses&&sesFicha(ses),x=f&&f.ex[S.active.i],kg=kgNow();
+    if(!x||!kg||x.chk)return h;
+    var t=exKTxt(exKMap(f,null,kg)[x.id]||0);if(!t)return h;
+    var i=h.indexOf('<h2 class="big">');if(i<0)return h;
+    var a=h.indexOf('<div class="sub">',i);if(a<0)return h;
+    var b=h.indexOf('</div>',a);if(b<0)return h;
+    return h.slice(0,b)+' · <b style="color:var(--accent)">'+t+'</b>'+h.slice(b);
+  }catch(e){return h}
+};
 
 render();
 
