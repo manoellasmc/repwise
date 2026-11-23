@@ -2,7 +2,7 @@
 <html lang="pt-BR"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<script>window.APPV="23/11 16:35 UTC"</script>
+<script>window.APPV="23/11 17:25 UTC"</script>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/icon-32.png">
 <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
@@ -1240,7 +1240,7 @@ function sessDetail(id){
   Object.keys(en).forEach(function(k){sets+=doneSets(en[k]).length});
   h+='<div class="card"><div class="pad"><div class="kicker">Como foi o treino</div><h2>'+esc(sesTitle(s))+'</h2><div class="sub">'+fmt(s.date,{weekday:'long',day:'numeric',month:'long'})+' · '+sesDone(id)+' exerc. · '+sets+' séries · '+nf(sesVolume(id))+' kg de volume</div>';
   Object.keys(en).forEach(function(k){var e=en[k],ds=doneSets(e);if(!ds.length&&!e.cd)return;
-    h+='<div><b>'+esc(e.n)+'</b>'+exKTagS(s,k)+(ds.length?'<div class="chips" style="margin-top:4px">'+ds.map(function(q){return '<span class="chip st">'+nf(q.kg)+' kg × '+q.reps+'</span>'}).join('')+'</div>':'<div class="sub">'+(e.min?esc(e.min)+' min':'concluído')+'</div>')+(e.note?'<div class="sub">“'+esc(e.note)+'”</div>':'')+'</div>'});
+    h+='<div><b>'+esc(e.n)+'</b>'+exKTagS(s,k)+cdEdBtn(id,k)+(ds.length?'<div class="chips" style="margin-top:4px">'+ds.map(function(q){return '<span class="chip st">'+nf(q.kg)+' kg × '+q.reps+'</span>'}).join('')+'</div>':'<div class="sub">'+(e.min?esc(e.min)+' min':'concluído')+'</div>')+(e.note?'<div class="sub">“'+esc(e.note)+'”</div>':'')+'</div>'});
   h+='<div class="acts"><button class="btn sm" data-act="seesum" data-id="'+id+'">Comparar com anterior</button><button class="btn sm" data-act="start" data-id="'+esc(s.fichaId)+'" data-date="'+s.date+'">Continuar/editar</button><button class="btn sm dng" data-act="delses" data-id="'+id+'">'+(S.confirm===id?'Confirmar exclusão':'Excluir treino')+'</button></div></div></div>';
   return h;
 }
@@ -2122,7 +2122,7 @@ function hcCard(id){
   if(s.circ&&s.circ.d){var rr=Object.keys(s.circ.d).length;h+='<div class="ex"><b>Circuito</b><div class="sub">'+rr+' rodada'+(rr===1?'':'s')+' registrada'+(rr===1?'':'s')+'</div></div>'}
   var order=f?f.ex.map(function(x){return x.id}):Object.keys(en);
   order.forEach(function(k){var e=en[k];if(!e)return;var ds=doneSets(e);if(!ds.length&&!e.cd)return;
-    h+='<div class="ex"><b>'+esc(e.n)+'</b>'+exKTagS(s,k)+(ds.length?'<div class="chips" style="margin-top:4px">'+ds.map(function(q){return '<span class="chip">'+nf(q.kg)+(q.m>1?' kg ×'+q.m:' kg')+' × '+q.reps+'</span>'}).join('')+'</div>'+(ds[0].m>1?'<div class="sub">Peso por halter. Total movido: '+nf(vol(ds))+' kg.</div>':''):'<div class="sub">'+(e.min?esc(e.min)+' min':'Concluído')+(e.kmh?' · '+esc(e.kmh)+' km/h':'')+(e.inc?' · inclinação '+esc(e.inc):'')+'</div>')+(e.note?'<div class="sub">“'+esc(e.note)+'”</div>':'')+'</div>'});
+    h+='<div class="ex"><b>'+esc(e.n)+'</b>'+exKTagS(s,k)+cdEdBtn(id,k)+(ds.length?'<div class="chips" style="margin-top:4px">'+ds.map(function(q){return '<span class="chip">'+nf(q.kg)+(q.m>1?' kg ×'+q.m:' kg')+' × '+q.reps+'</span>'}).join('')+'</div>'+(ds[0].m>1?'<div class="sub">Peso por halter. Total movido: '+nf(vol(ds))+' kg.</div>':''):'<div class="sub">'+(e.min?esc(e.min)+' min':'Concluído')+(e.kmh?' · '+esc(e.kmh)+' km/h':'')+(e.inc?' · inclinação '+esc(e.inc):'')+'</div>')+(e.note?'<div class="sub">“'+esc(e.note)+'”</div>':'')+'</div>'});
   h+='<div class="acts" style="margin-top:8px"><button class="btn sm" data-act="seesum" data-id="'+id+'">Comparar com anterior</button><button class="btn sm dng" data-act="delses" data-id="'+id+'">'+(S.confirm===id?'Confirmar exclusão':'Excluir treino')+'</button></div></div></div>';
   return h;
 }
@@ -2502,6 +2502,47 @@ var _sd29=sessDetail;
 sessDetail=function(id){var h=_sd29(id);return S.ses[id]&&S.ses[id].lite?h.replace('<div class="kicker">Como foi o treino</div>','<div class="kicker">Como foi o treino · dia mais pesado (carga reduzida)</div>'):h};
 var _hc29=hcCard;
 hcCard=function(id){var h=_hc29(id);return S.ses[id]&&S.ses[id].lite?h.replace('<div class="kicker">Treino realizado</div>','<div class="kicker">Treino realizado · dia mais pesado (carga reduzida)</div>'):h};
+/* ---- add30: corrigir esteira/cardio de um treino já encerrado, sem reabrir o treino ---- */
+S.cde=null;
+var _sv30=saveSes;
+saveSes=function(id){
+  var q=S.ses[id];
+  if(q){
+    if(!q.fin&&q.t1){q.t1keep=q.t1;q.t1reopen=Date.now()}
+    else if(q.fin&&!q.t1&&q.t1keep){if(Date.now()-(q.t1reopen||0)<20*60000)q.t1=q.t1keep;delete q.t1keep;delete q.t1reopen}
+  }
+  return _sv30(id);
+};
+function isCardioEn(e){return !!e&&(/esteira|corrida|bike|bicicleta|eliptic|escada|corda/i.test(cdNorm({name:e.n||''}))||e.g==='aerobio'||e.min!=null&&!doneSets(e).length)}
+function cdEdBtn(id,k){
+  var s=S.ses[id],e=s&&s.entries&&s.entries[k];if(!isCardioEn(e))return '';
+  var walk=/esteira|corrida/i.test(e.n||'');
+  if(S.cde&&S.cde.sid===id&&S.cde.k===k){
+    return '<div class="card" style="margin:8px 0"><div class="pad cmp"><div class="sub">Corrigir '+esc(e.n)+'</div>'+
+      '<div style="display:grid;grid-template-columns:repeat('+(walk?3:1)+',1fr);gap:8px"><label class="field">TEMPO (MIN)<input data-cde="min" inputmode="decimal" value="'+esc(e.min!=null?e.min:'')+'"></label>'+
+      (walk?'<label class="field">KM/H<input data-cde="kmh" inputmode="decimal" value="'+esc(e.kmh!=null?e.kmh:'')+'"></label><label class="field">INCLIN.<input data-cde="inc" inputmode="decimal" value="'+esc(e.inc!=null?e.inc:'')+'"></label>':'')+'</div>'+
+      '<div class="hrow"><button class="btn pri" data-act="cdesave">Salvar</button><button class="btn" data-act="cdecancel">Cancelar</button></div>'+
+      '<div class="sub">O horário de início e fim do treino não muda.</div></div></div>';
+  }
+  return '<div><button class="xlink" data-act="cdeopen" data-sid="'+esc(id)+'" data-k="'+esc(k)+'">✎ Corrigir tempo'+(walk?' / velocidade':'')+'</button></div>';
+}
+var _fc30=fatClick;
+fatClick=function(a,b){
+  if(a==='cdeopen'){S.cde={sid:b.dataset.sid,k:b.dataset.k};render();return true}
+  if(a==='cdecancel'){S.cde=null;render();return true}
+  if(a==='cdesave'&&S.cde){
+    var s=S.ses[S.cde.sid],e=s&&s.entries&&s.entries[S.cde.k];
+    if(e){
+      var g=function(k){var el=document.querySelector('[data-cde="'+k+'"]');return el?pnum(el.value).trim():null};
+      var mn=g('min'),kh=g('kmh'),ic=g('inc');
+      if(mn!==null)e.min=mn;if(kh!==null)e.kmh=kh;if(ic!==null)e.inc=ic;
+      e.cd=true;e.txt=[e.min?e.min+' min':'',e.kmh?e.kmh+' km/h':'',e.inc?'inclinação '+e.inc:''].filter(Boolean).join(' · ');
+      saveSes(S.cde.sid);
+    }
+    S.cde=null;render();return true;
+  }
+  return _fc30(a,b);
+};
 
 render();
 
