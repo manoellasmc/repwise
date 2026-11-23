@@ -2,7 +2,7 @@
 <html lang="pt-BR"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<script>window.APPV="23/11 16:10 UTC"</script>
+<script>window.APPV="23/11 16:17 UTC"</script>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/icon-32.png">
 <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
@@ -2311,6 +2311,60 @@ suggest=function(name,tr,nw,exceptSid){
     return {t:'review',kg:kgL,text:'Nas últimas 2 sessões a '+nf(kgL)+' kg você não chegou a 10 reps em todas as séries. Mantenha a carga e, se a execução estiver comprometida, reduza 5 a 10%.'};
   return {t:'keep',kg:kgL,tgt:10,text:'Mantenha '+nf(kgL)+' kg e busque 10 reps em todas as séries (a menor foi '+low+').'};
 };
+/* ---- add26: "Como fazer" também dentro do exercício ativo ---- */
+var _va26=viewActive;
+viewActive=function(){
+  var h=_va26();
+  try{
+    if(!S.active)return h;
+    var ses=S.ses[S.active.sid],f=ses&&sesFicha(ses),x=f&&f.ex[S.active.i];if(!x)return h;
+    var m=x.lib?{id:x.lib}:libOf(x.name);if(!(m&&LIBIDX[m.id]))return h;
+    var i=h.indexOf('<h2 class="big">');if(i<0)return h;
+    var j=h.indexOf('</h2>',i);if(j<0)return h;
+    var k=h.indexOf('</span></div>',j);var at=(k>=0&&k-j<200)?k+13:j+5;
+    return h.slice(0,at)+'<div><button class="xlink" data-act="how" data-id="'+esc(m.id)+'" style="min-height:40px;font-size:14px">▶ '+(m.sim?'Como fazer (exercício parecido)':'Como fazer')+'</button></div>'+h.slice(at);
+  }catch(e){return h}
+};
+/* ---- add27: confirmação ao "Pular exercício" (o que deixa de ganhar e calorias) ---- */
+S.skipAsk=false;
+(function(){var st=document.createElement('style');st.textContent='#skip-ov{position:fixed;inset:0;z-index:60;background:rgba(5,10,30,.7);display:flex;align-items:flex-end;justify-content:center;padding:16px;padding-bottom:max(16px,env(safe-area-inset-bottom,0px))}#skip-ov .skb{background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:18px;max-width:520px;width:100%;max-height:88vh;overflow:auto;padding:18px 18px 16px}#skip-ov h2{margin:0 0 4px;font:700 22px/1.15 var(--display);letter-spacing:.2px}#skip-ov .sk{margin:12px 0;display:grid;gap:10px}#skip-ov .sk div{display:flex;gap:10px;line-height:1.35;font-size:14px}#skip-ov .sk i{flex:none;width:8px;height:8px;border-radius:50%;background:var(--accent);margin-top:6px}#skip-ov .sk span{min-width:0}#skip-ov .skn{font-size:12px;color:var(--muted);margin:2px 0 12px}#skip-ov .acts2{display:grid;gap:8px}';document.head.appendChild(st)})();
+function skipInfo(){
+  var c=actEx(),x=c.x,f=c.f,g=exMg(x),kg=kgNow(),sid=S.active.sid,L=[],note='';
+  var m=planMeta(x),last=lastOf(x.name,sid),plan=parsePlan(x);
+  if(g&&g!=='aerobio'&&MGN[g]){
+    var ag=weekAgg(monOf(todayIso))[g],ns=ag?ag.sets:0;
+    L.push('Você deixa de trabalhar <b>'+esc(MGN[g].toLowerCase())+'</b>. Nesta semana você já tem <b>'+ns+'</b> série'+(ns===1?'':'s')+' desse músculo.');
+  }
+  if(plan.cardio||(g==='aerobio')){
+    var mm=plan.cardio||txtMin(String(x.sets||''));if(mm)L.push('Você deixa de fazer <b>'+Math.round(mm)+' min</b> de cardio.');
+  }else if(m.nw){
+    var lk=last?maxKg(working(last.sets)):0,pk=+pnum(planKg(x,false)||0),k0=lk||pk;
+    L.push('Planejado: <b>'+m.nw+' série'+(m.nw===1?'':'s')+(m.tr?' de '+m.tr+' reps':'')+'</b>'+(k0?' com <b>'+nf(k0)+' kg</b>':'')+(k0&&m.tr?' (volume ≈ <b>'+Math.round(m.nw*m.tr*k0)+' kg</b>)':'')+'.');
+    var sg=suggest(x.name,m.tr,m.nw,sid);
+    if(sg.t==='up')L.push('Hoje era o dia de <b>subir a carga para '+nf(sg.kg)+' kg</b>.');
+    else if(sg.tgt)L.push('A meta de hoje era <b>'+sg.tgt+' reps</b> em todas as séries a '+nf(sg.kg)+' kg.');
+  }
+  if(kg){
+    var q=exKcal(x,null,kg),A=fichaKcal(f,kg,null),B=fichaKcal(Object.assign({},f,{ex:f.ex.filter(function(e){return e.id!==x.id})}),kg,null);
+    var kcs=q.kcal>=5?'≈ <b>'+kcRound(q.kcal)+' kcal</b>':'menos de <b>5 kcal</b>';
+    L.push('Calorias que você deixa de gastar: '+kcs+'. O treino previsto vai de ≈ '+kcRound(A.kcal)+' para ≈ '+kcRound(B.kcal)+' kcal.');
+    if(g!=='aerobio'&&q.kcal<30)note='Um exercício de musculação pesa pouco nas calorias. O que mais se perde é o estímulo para o músculo.';
+  }else L.push('Registre seu peso na aba Saúde para ver as calorias.');
+  return {name:x.name,L:L,note:note};
+}
+var _rd27=render;
+render=function(){_rd27();var old=document.getElementById('skip-ov');if(old)old.remove();
+  if(S.skipAsk&&S.active){var inf;try{inf=skipInfo()}catch(e){inf=null}
+    if(!inf){S.skipAsk=false;return}
+    var d=document.createElement('div');d.id='skip-ov';
+    d.innerHTML='<div class="skb" role="alertdialog" aria-label="Pular exercício"><h2>Pular '+esc(inf.name)+'?</h2><div class="sk">'+inf.L.map(function(t){return '<div><i></i><span>'+t+'</span></div>'}).join('')+'</div>'+(inf.note?'<div class="skn">'+esc(inf.note)+'</div>':'<div class="skn">Estimativas, com erro de 20 a 30%.</div>')+'<div class="acts2"><button class="btn pri" data-act="skipno">Voltar ao exercício</button><button class="btn" data-act="skipyes">Pular mesmo assim</button></div></div>';
+    document.body.appendChild(d)}};
+document.addEventListener('click',function(ev){
+  var t=ev.target&&ev.target.closest&&ev.target.closest('[data-act]');if(!t)return;var a=t.dataset.act;
+  if(a==='skipex'&&!t.closest('#skip-ov')&&S.active){ev.stopPropagation();ev.preventDefault();S.skipAsk=true;render();return}
+  if(a==='skipno'){ev.stopPropagation();S.skipAsk=false;render();return}
+  if(a==='skipyes'){ev.stopPropagation();S.skipAsk=false;skClick('skipex');return}
+},true);
 
 render();
 
