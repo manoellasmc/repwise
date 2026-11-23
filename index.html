@@ -2,7 +2,7 @@
 <html lang="pt-BR"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<script>window.APPV="23/11 17:25 UTC"</script>
+<script>window.APPV="23/11 17:31 UTC"</script>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/icon-32.png">
 <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
@@ -2542,6 +2542,16 @@ fatClick=function(a,b){
     S.cde=null;render();return true;
   }
   return _fc30(a,b);
+};
+/* mantém o texto-resumo do cardio (txt) sempre igual a tempo / velocidade / inclinação */
+function cdTxt(e){return [e.min?e.min+' min':'',e.kmh?e.kmh+' km/h':'',e.inc&&+pnum(e.inc)?'inclinação '+e.inc:''].filter(Boolean).join(' · ')}
+var _ep30=entryPatch;
+entryPatch=function(sid,x,patch){
+  var e=_ep30(sid,x,patch);
+  try{
+    if(('min' in patch||'kmh' in patch||'inc' in patch)&&!('txt' in patch)&&(e.g==='aerobio'||exMg(x)==='aerobio')){e.txt=cdTxt(e);saveSes(sid)}
+  }catch(err){}
+  return e;
 };
 
 render();
