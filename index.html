@@ -2,7 +2,7 @@
 <html lang="pt-BR"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<script>window.APPV="23/11 18:02 UTC"</script>
+<script>window.APPV="24/11 22:54 UTC"</script>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/icon-32.png">
 <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
@@ -2564,6 +2564,58 @@ function syncCdTxt(){
 var _r30=render;
 render=function(){syncCdTxt();return _r30.apply(this,arguments)};
 syncCdTxt();
+/* ---- add31: aviso do ciclo na aba Hoje + marcar "dia mais pesado" antes de começar ---- */
+S.litePre=lsGet('pw2-litepre')||'';
+function litePreOn(){return S.litePre===todayIso}
+function cyTodayCard(){
+  var ci=cyInfo(todayIso);if(!ci)return '';
+  var per=+S.cy.per||5,mens=ci.day<=per,hint=cyHint(),sid=todayIso+'_',lite=litePreOn();
+  Object.keys(S.ses).forEach(function(id){if(S.ses[id].date===todayIso&&S.ses[id].lite)lite=true});
+  var h='<div class="card"><div class="pad cmp"><div class="kicker">Ciclo · dia '+ci.day+' de '+ci.len+'</div><div class="sub">'+esc(ci.ph.charAt(0).toUpperCase()+ci.ph.slice(1))+' (estimativa)</div>';
+  if(mens)h+='<div class="note" style="margin:6px 0">Nesta fase é comum ter menos disposição e força. Se for o seu caso, tudo bem baixar a carga ou o ritmo hoje.</div>';
+  else if(hint)h+='<div class="note" style="margin:6px 0">'+esc(hint)+'</div>';
+  if(mens||hint||lite){
+    h+='<button class="btn block'+(lite?' pri':'')+'" data-act="litepre" aria-pressed="'+lite+'">'+(lite?'Hoje marcado como dia mais pesado (toque para desfazer)':'Marcar hoje como dia mais pesado')+'</button>';
+    h+='<div class="sub">'+(lite?'Sem carga sugerida hoje, e este treino não conta para a progressão.':'Você escolhe: nada muda sozinho. Marcando, o app não sugere subir carga hoje e este treino fica fora da progressão.')+'</div>';
+  }
+  return h+'</div></div>';
+}
+var _vh31=viewHoje;
+viewHoje=function(){
+  var h=_vh31();
+  if((S.sel||todayIso)!==todayIso)return h;
+  var c=cyTodayCard();if(!c)return h;
+  var i=h.indexOf('<div class="card hero">');if(i<0)return h+c;
+  var j=h.indexOf('<div class="card',i+20);
+  return j<0?h+c:h.slice(0,j)+c+h.slice(j);
+};
+var _fc31=fatClick;
+fatClick=function(a,b){
+  if(a==='litepre'){
+    var on=!(litePreOn()||Object.keys(S.ses).some(function(id){return S.ses[id].date===todayIso&&S.ses[id].lite}));
+    S.litePre=on?todayIso:'';lsSet('pw2-litepre',S.litePre);
+    Object.keys(S.ses).forEach(function(id){var s=S.ses[id];if(s.date!==todayIso||s.fichaId==='cardio')return;
+      if(on){s.lite=true;var ci=cyInfo(todayIso);if(ci)s.cyd=ci.day}else{delete s.lite;delete s.cyd}saveSes(id)});
+    render();return true;
+  }
+  return _fc31(a,b);
+};
+var _sw31=startWorkout;
+startWorkout=function(fid,d){
+  _sw31.apply(this,arguments);
+  try{var s=S.active&&S.ses[S.active.sid];
+    if(s&&s.date===todayIso&&s.fichaId!=='cardio'&&litePreOn()&&!s.lite){s.lite=true;var ci=cyInfo(todayIso);if(ci)s.cyd=ci.day;saveSes(S.active.sid);render()}
+  }catch(e){}
+};
+/* tela do exercício: lembrete na fase da menstruação */
+var _lb31=liteBox;
+liteBox=function(){
+  var h=_lb31();try{
+    var s=S.ses[S.active.sid],ci=cyInfo(s.date||todayIso);
+    if(ci&&!s.lite&&ci.day<=(+S.cy.per||5))h=h.replace('<button class="btn block','<div class="note" style="margin:6px 0">Se hoje estiver com menos disposição ou força, pode baixar a carga.</div><button class="btn block');
+  }catch(e){}
+  return h;
+};
 
 render();
 
