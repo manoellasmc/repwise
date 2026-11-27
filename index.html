@@ -2,7 +2,7 @@
 <html lang="pt-BR"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<script>window.APPV="27/11 16:25 UTC"</script>
+<script>window.APPV="27/11 16:32 UTC"</script>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/icon-32.png">
 <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
@@ -2907,7 +2907,7 @@ viewActive=function(){
 '#root .hojerow{display:flex;gap:10px;align-items:stretch;margin:0 0 12px}#root .hojerow>*{min-width:0}'+
 '#root .hojerow .cdcol{flex:1 1 0}#root .hojerow .trcol{flex:2 1 0}#root .hojerow .card{margin:0;height:100%}'+
 '#root .trcol .card.hero .pad{padding:14px}#root .trcol .card.hero .kicker{font-size:10px;line-height:1.35}'+
-'#root .trcol .card.hero h2{font-size:19px;line-height:1.15;margin:6px 0 10px}'+
+'#root .trcol .card.hero h2{font-size:19px;line-height:1.15;margin:0 0 4px}#root .trcol .card.hero .hsub{font-size:11px;line-height:1.35;color:var(--on-navy-mut);margin:0 0 12px}'+
 '#root .trcol .card.hero .hrow{gap:6px;flex-wrap:nowrap}#root .trcol .card.hero .btn{min-height:40px;height:40px;padding:0 10px;font-size:14px}#root .trcol .card.hero .btn.pri{flex:1 1 auto;min-width:0}#root .trcol .card.hero .btn.ic{flex:0 0 40px;min-width:40px;width:40px;padding:0}'+
 '#root .cdc .pad{padding:12px;display:flex;flex-direction:column;gap:8px;height:100%;box-sizing:border-box}'+
 '#root .cdc .kicker{font-size:10px}'+
@@ -2970,6 +2970,9 @@ viewHoje=function(){
     var cd=dvTake(h,'<div class="card"><div class="pad cmp"><div class="kicker">Cardio · treino separado');
     if(cd)h=h.slice(0,cd.i)+h.slice(cd.e);
     var hero=dvTake(h,'<div class="card hero">');
+    if(hero){var m=/<div class="kicker"[^>]*>([\s\S]*?)<\/div>(\s*<h2>[\s\S]*?<\/h2>)/.exec(hero.html);
+      if(m){var inf=m[1].replace(/^\s*Treino de hoje\s*·?\s*/i,'');
+        hero.html=hero.html.replace(m[0],m[2]+(inf.replace(/<[^>]*>/g,'').trim()?'<div class="hsub">'+inf+'</div>':''))}}
     var row=hero?'<div class="hojerow"><div class="trcol">'+hero.html+'</div><div class="cdcol">'+cardioMini()+'</div></div>':'<div class="hojerow"><div class="cdcol" style="flex:1 1 100%">'+cardioMini()+'</div></div>';
     if(hero)h=h.slice(0,hero.i)+row+h.slice(hero.e);
     else h=h+row;
