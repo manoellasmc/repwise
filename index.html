@@ -2,7 +2,7 @@
 <html lang="pt-BR"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<script>window.APPV="27/11 01:34 UTC"</script>
+<script>window.APPV="27/11 01:37 UTC"</script>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/icon-32.png">
 <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
@@ -2660,7 +2660,9 @@ var DPRE=[
   {n:'Banana prata pequena (1 un.)',k:70,p:1,s:'lanche'},
   {n:'Mini pizza · 60 g frango + 15 g mussarela (1 un.)',k:280,p:26,s:'jantar'},
   {n:'Mini pizza · 60 g frango + 30 g mussarela (1 un.)',k:333,p:30,s:'jantar'},
-  {n:'Mini pizza · 100 g frango + 30 g mussarela (1 un.)',k:400,p:42,s:'jantar'}
+  {n:'Mini pizza · 100 g frango + 30 g mussarela (1 un.)',k:400,p:42,s:'jantar'},
+  {n:'Pipoca de pipoqueira sem óleo (cada 10 g de milho antes de estourar)',k:37,p:1.2,s:'lanche'},
+  {n:'Mini pastel de carne moída (≈ 30 g de carne + massa)',k:175,p:11,s:'jantar'}
 ];
 /* dia 26/11/2026: refeições que você contou, já preenchidas uma única vez (estimativas; edite à vontade) */
 (function(){
@@ -2668,6 +2670,20 @@ var DPRE=[
   if(S.diary['2026-11-26']&&S.diary['2026-11-26'].length)return;
   var m=function(i,s,p,q){return {id:'seed'+i,slot:s,name:p.n,kcal:p.k,prot:p.p,q:q}};
   S.diary['2026-11-26']=[m(1,'cafe',DPRE[0],1),m(2,'alm',DPRE[1],1),m(3,'lanche',DPRE[2],2),m(4,'jantar',DPRE[4],2)];saveDiary();
+})();
+/* dia 25/11/2026: refeições que você contou (estimativas; a pipoca usa 40 g de milho como suposição, ajuste com − e +) */
+(function(){
+  if(lsGet('pw2-diary-seed2'))return;lsSet('pw2-diary-seed2',1);
+  if(S.diary['2026-11-25']&&S.diary['2026-11-25'].length)return;
+  var m=function(i,s,p,q){return {id:'seedb'+i,slot:s,name:p.n,kcal:p.k,prot:p.p,q:q}};
+  S.diary['2026-11-25']=[m(1,'cafe',DPRE[0],1),m(2,'alm',DPRE[1],1),m(3,'lanche',DPRE[6],4),m(4,'jantar',DPRE[5],2)];saveDiary();
+})();
+/* dia 23/11/2026: refeições que você contou. O mini pastel é estimativa (massa ≈ 100 kcal + 30 g de carne moída ≈ 75 kcal); ajuste com o rótulo da sua massa */
+(function(){
+  if(lsGet('pw2-diary-seed3'))return;lsSet('pw2-diary-seed3',1);
+  if(S.diary['2026-11-23']&&S.diary['2026-11-23'].length)return;
+  var m=function(i,s,p,q){return {id:'seedc'+i,slot:s,name:p.n,kcal:p.k,prot:p.p,q:q}};
+  S.diary['2026-11-23']=[m(1,'cafe',DPRE[0],1),m(2,'alm',DPRE[1],1),m(3,'jantar',DPRE[7],3)];saveDiary();
 })();
 function dNum(v){var n=+String(v==null?'':v).replace(',','.');return isFinite(n)?n:0}
 function dFmt(n){return Math.round(n).toLocaleString('pt-BR')}
