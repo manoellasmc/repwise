@@ -2,7 +2,7 @@
 <html lang="pt-BR"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<script>window.APPV="27/11 17:23 UTC"</script>
+<script>window.APPV="27/11 17:26 UTC"</script>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/icon-32.png">
 <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
@@ -3027,6 +3027,22 @@ viewSummary=function(){
     }
   }catch(e){}
   return h;
+};
+/* ---- add38: tema claro/escuro/automático (Perfil) ---- */
+S.theme=lsGet('pw2-theme')||'auto';
+function applyTheme(){try{var r=document.documentElement;if(S.theme==='light'||S.theme==='dark')r.setAttribute('data-theme',S.theme);else r.removeAttribute('data-theme')}catch(e){}}
+applyTheme();
+function themeCard(){
+  var h='<div class="card"><div class="pad cmp"><div class="kicker">Tema</div><div class="seg" role="group" aria-label="Tema do app">';
+  [['auto','Automático'],['light','Claro'],['dark','Escuro']].forEach(function(o){h+='<button data-act="theme" data-v="'+o[0]+'" aria-pressed="'+(S.theme===o[0])+'">'+o[1]+'</button>'});
+  return h+'</div><div class="sub">Automático segue o tema do celular.</div></div></div>';
+}
+var _vp38=viewPerfil;
+viewPerfil=function(){var h=_vp38();var i=h.indexOf('<div class="card">');return i<0?themeCard()+h:h.slice(0,i)+themeCard()+h.slice(i)};
+var _fc38=fatClick;
+fatClick=function(a,b){
+  if(a==='theme'){S.theme=b.dataset.v;lsSet('pw2-theme',S.theme);applyTheme();render();return true}
+  return _fc38(a,b);
 };
 
 render();
