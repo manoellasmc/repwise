@@ -2,7 +2,7 @@
 <html lang="pt-BR"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<script>window.APPV="27/11 16:12 UTC"</script>
+<script>window.APPV="27/11 16:15 UTC"</script>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/icon-32.png">
 <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
@@ -2882,6 +2882,7 @@ liteBox=function(){
 '#root .ttl .mg{flex:0 0 auto;margin-left:auto}'+
 '#root .ttl .hw{flex:0 0 auto;width:36px;height:36px;min-height:0;padding:0 0 0 2px;border-radius:10px;border:1.5px solid var(--accent);background:transparent;color:var(--accent);font-size:13px;line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer}';
 document.head.appendChild(st)})();
+(function(){var st=document.createElement('style');st.textContent='#root>.sug,#root .sug{margin:14px 0 0}';document.head.appendChild(st)})();
 var _va35=viewActive;
 viewActive=function(){
   var h=_va35();
@@ -2889,7 +2890,16 @@ viewActive=function(){
     var re=/<h2 class="big">([^<]*)<\/h2>(?:<div>((?:<span class="mg">[^<]*<\/span>\s*)+)<\/div>)?(?:<div><button class="xlink" data-act="how" data-id="([^"]+)"[^>]*>[^<]*<\/button><\/div>)?/;
     var m=re.exec(h);if(!m)return h;
     var arrow=m[3]?'<button class="hw" data-act="how" data-id="'+m[3]+'" aria-label="Ver como fazer o exercício" title="Como fazer">▶</button>':'';
-    return h.replace(re,'<div class="ttl">'+arrow+'<h2 class="big">'+m[1]+'</h2>'+(m[2]||'')+'</div>');
+    h=h.replace(re,'<div class="ttl">'+arrow+'<h2 class="big">'+m[1]+'</h2>'+(m[2]||'')+'</div>');
+    /* carga sugerida: desce para depois de Anterior/Próximo, antes do rodapé do ciclo */
+    var a=h.indexOf('<div class="sug">');
+    if(a>=0){
+      var b=h.indexOf('</div>',a)+6,box=h.slice(a,b);
+      h=h.slice(0,a)+h.slice(b);
+      var f=h.indexOf('<div class="cyfoot">');
+      h=f>=0?h.slice(0,f)+box+h.slice(f):h+box;
+    }
+    return h;
   }catch(e){return h}
 };
 
