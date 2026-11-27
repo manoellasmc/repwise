@@ -2,7 +2,7 @@
 <html lang="pt-BR"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<script>window.APPV="27/11 01:23 UTC"</script>
+<script>window.APPV="27/11 01:27 UTC"</script>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/icon-32.png">
 <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
@@ -2685,10 +2685,10 @@ function daySaldo(d){
 function dLab(d){var w=['dom','seg','ter','qua','qui','sex','sáb'],x=fromIso(d);return w[x.getDay()]+' '+('0'+x.getDate()).slice(-2)+'/'+('0'+(x.getMonth()+1)).slice(-2)}
 function dSaldoTxt(r){
   if(!r)return '<span class="sub">—</span>';
-  var def=+S.fat.def||350,v=Math.round(r.s/5)*5;
-  if(r.s>=def)return '<b style="color:var(--good)">déficit '+dFmt(v)+'</b>';
-  if(r.s>0)return '<b>déficit '+dFmt(v)+'</b>';
-  return '<b style="color:var(--bad)">acima '+dFmt(Math.abs(v))+'</b>';
+  var v=Math.round(r.s/5)*5;
+  if(r.s>0)return '<b style="color:var(--good)">−'+dFmt(v)+'</b>';
+  if(r.s<0)return '<b style="color:var(--bad)">+'+dFmt(Math.abs(v))+'</b>';
+  return '<b>0</b>';
 }
 (function(){var st=document.createElement('style');st.textContent='.subt{display:flex;gap:8px;margin:0 4px 10px}.subt button{flex:1;min-height:44px;border-radius:12px;border:1px solid var(--line);background:transparent;color:var(--ink);font:inherit;font-weight:600}.subt button[aria-pressed=true]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}.dh,.drow{display:grid;grid-template-columns:1.2fr .95fr .95fr 1.25fr;gap:6px;align-items:center;width:100%;padding:11px 10px;border:0;border-bottom:1px solid var(--line);background:transparent;color:var(--ink);font:inherit;font-size:13px;text-align:left}.dh{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}.drow{min-height:48px;cursor:pointer}.drow .dd{font-weight:600}.drow .ch{color:var(--muted);margin-right:4px;display:inline-block;width:10px}.drow.open{background:var(--bg)}.dbody{padding:10px 12px 14px;border-bottom:1px solid var(--line);background:var(--bg)}.dbody h4{margin:10px 0 4px;font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}.dit{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px dashed var(--line);font-size:13px}.dit .nm{flex:1;min-width:0}.dit .qb{display:flex;align-items:center;gap:4px}.dit .qb button,.dit .x{min-width:32px;min-height:32px;border-radius:8px;border:1px solid var(--line);background:transparent;color:var(--ink);font:inherit}.dpres{display:flex;flex-direction:column;gap:6px;margin:6px 0}.dpres .pb{min-height:44px;text-align:left;border:1px solid var(--line);border-radius:12px;background:var(--surface);color:var(--ink);font:inherit;font-size:13px;padding:8px 12px}';document.head.appendChild(st)})();
 function dItems(d,slot){
@@ -2730,10 +2730,10 @@ function dBody(d){
   return h+'</div>';
 }
 function viewDiario(){
-  var h='<div class="card"><div class="pad cmp"><div class="kicker">Diário calórico</div><div class="sub">Gasto = TMB × 1,2 + treinos do dia. Saldo = gasto − o que você comeu. Toque num dia para abrir e registrar as refeições.</div>';
+  var h='<div class="card"><div class="pad cmp"><div class="kicker">Diário calórico</div><div class="sub">Gasto = TMB × 1,2 + treinos do dia. Saldo = o que você comeu − o gasto: <b style=\"color:var(--good)\">− é déficit</b> e <b style=\"color:var(--bad)\">+ é a mais</b>. Toque num dia para abrir e registrar as refeições.</div>';
   var rows=[],sum=0,n=0,ok=0,def=+S.fat.def||350;
   for(var i=0;i<30;i++){var dt=new Date(fromIso(todayIso).getTime()-i*864e5),d=iso(dt),r=daySaldo(d);rows.push({d:d,r:r,o:dayOut(d),e:dayEaten(d)});if(i<7&&r){sum+=r.s;n++;if(r.s>=def)ok++}}
-  if(n)h+='<div class="stat"><div><b>'+(sum/n>=0?'':'acima ')+dFmt(Math.abs(sum/n))+'</b><span>'+(sum/n>=0?'déficit':'saldo')+' médio por dia (últimos 7, '+n+' com registro)</span></div><div><b>'+ok+' de '+n+'</b><span>dias com déficit na meta ('+def+')</span></div></div>';
+  if(n)h+='<div class="stat"><div><b style="color:var('+(sum/n>=0?'--good':'--bad')+')">'+(sum/n>=0?'−':'+')+dFmt(Math.abs(sum/n))+'</b><span>saldo médio por dia (últimos 7, '+n+' com registro)</span></div><div><b>'+ok+' de '+n+'</b><span>dias com déficit na meta ('+def+')</span></div></div>';
   h+='</div>';
   h+='<div class="dtab" role="table"><div class="dh" role="row"><span>Dia</span><span>Gasto</span><span>Comeu</span><span>Saldo</span></div>';
   rows.forEach(function(x){
