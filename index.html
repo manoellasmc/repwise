@@ -2,7 +2,7 @@
 <html lang="pt-BR"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<script>window.APPV="27/11 01:37 UTC"</script>
+<script>window.APPV="27/11 01:41 UTC"</script>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/icon-32.png">
 <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
@@ -2662,7 +2662,8 @@ var DPRE=[
   {n:'Mini pizza · 60 g frango + 30 g mussarela (1 un.)',k:333,p:30,s:'jantar'},
   {n:'Mini pizza · 100 g frango + 30 g mussarela (1 un.)',k:400,p:42,s:'jantar'},
   {n:'Pipoca de pipoqueira sem óleo (cada 10 g de milho antes de estourar)',k:37,p:1.2,s:'lanche'},
-  {n:'Mini pastel de carne moída (≈ 30 g de carne + massa)',k:175,p:11,s:'jantar'}
+  {n:'Mini pastel de carne moída (≈ 30 g de carne + massa)',k:175,p:11,s:'jantar'},
+  {n:'Baguete com espeto de carne, vinagrete e maionese caseira',k:700,p:38,s:'jantar'}
 ];
 /* dia 26/11/2026: refeições que você contou, já preenchidas uma única vez (estimativas; edite à vontade) */
 (function(){
@@ -2684,6 +2685,13 @@ var DPRE=[
   if(S.diary['2026-11-23']&&S.diary['2026-11-23'].length)return;
   var m=function(i,s,p,q){return {id:'seedc'+i,slot:s,name:p.n,kcal:p.k,prot:p.p,q:q}};
   S.diary['2026-11-23']=[m(1,'cafe',DPRE[0],1),m(2,'alm',DPRE[1],1),m(3,'jantar',DPRE[7],3)];saveDiary();
+})();
+/* dia 24/11/2026: refeições que você contou. A baguete é estimativa bem larga (baguete ≈ 270 + espeto de carne ≈ 250 + vinagrete ≈ 30 + maionese caseira ≈ 100 a 200 kcal) */
+(function(){
+  if(lsGet('pw2-diary-seed4'))return;lsSet('pw2-diary-seed4',1);
+  if(S.diary['2026-11-24']&&S.diary['2026-11-24'].length)return;
+  var m=function(i,s,p,q){return {id:'seedd'+i,slot:s,name:p.n,kcal:p.k,prot:p.p,q:q}};
+  S.diary['2026-11-24']=[m(1,'cafe',DPRE[0],1),m(2,'alm',DPRE[1],1),m(3,'jantar',DPRE[8],1)];saveDiary();
 })();
 function dNum(v){var n=+String(v==null?'':v).replace(',','.');return isFinite(n)?n:0}
 function dFmt(n){return Math.round(n).toLocaleString('pt-BR')}
