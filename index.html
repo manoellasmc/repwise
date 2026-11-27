@@ -2,7 +2,7 @@
 <html lang="pt-BR"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<script>window.APPV="27/11 17:15 UTC"</script>
+<script>window.APPV="27/11 17:23 UTC"</script>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/icon-32.png">
 <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
@@ -3016,6 +3016,17 @@ var _fc37=fatClick;
 fatClick=function(a,b){
   if(a==='sdtog'){var i=b.dataset.id;S.sdo[i]=!S.sdo[i];render();return true}
   return _fc37(a,b);
+};
+var _vs37=viewSummary;
+viewSummary=function(){
+  var h=_vs37(),s=S.ses[S.summary];
+  try{
+    if(s&&s.fichaId&&s.fichaId!=='cardio'){
+      var ed='<button class="btn block" data-act="start" data-id="'+esc(s.fichaId)+'" data-date="'+s.date+'" style="margin-bottom:8px"><svg viewBox="0 0 24 24" aria-hidden="true" style="width:18px;height:18px;margin-right:6px"><path d="M4 20h4L19 9l-4-4L4 16v4zM13.5 6.5l4 4"/></svg><span>Voltar a editar os exercícios</span></button>';
+      h=h.replace('<button class="btn pri block" data-act="closesum">',ed+'<button class="btn pri block" data-act="closesum">');
+    }
+  }catch(e){}
+  return h;
 };
 
 render();
