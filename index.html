@@ -2,7 +2,7 @@
 <html lang="pt-BR"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<script>window.APPV="27/11 01:41 UTC"</script>
+<script>window.APPV="27/11 16:09 UTC"</script>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/icon-32.png">
 <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
@@ -1999,7 +1999,7 @@ viewActive=function(){
   try{blocksOf(x,en,lastOf(x.name,S.active.sid)).forEach(function(q){if(!kg&&!q.warm)kg=num(q.kg)})}catch(e){}
   var row='<div class="hrow" style="align-items:center;margin:10px 0 2px"><button class="chip" data-act="pairtog" aria-pressed="'+on+'" style="min-height:40px">'+(on?'✓ ':'')+'2 halteres (par)</button><span class="sub" style="flex:1;margin:0">'+(on?'Digite o peso de <b>um</b> halter'+(kg?': '+nf(kg)+' × 2 = <b>'+nf(kg*2)+' kg</b> no total':'. O app soma os dois.'):'Digite o peso total que você move. Toque se usa um halter em cada mão.')+'</span></div>';
   var i=h.indexOf('<div class="blk');if(i<0)return h;h=h.slice(0,i)+row+h.slice(i);
-  if(on)h=h.split('<label>Carga (kg)<input').join('<label>kg por halter<input');
+  if(on){h=h.split('<label>Carga (kg)<input').join('<label>kg por halter<input');h=h.split('<span class="hc">Carga</span>').join('<span class="hc">Kg/halter</span>')}
   return h;
 };
 var _fc19=fatClick;
@@ -2465,7 +2465,7 @@ viewActive=function(){
     var i=h.indexOf('<div class="card"><div class="pad"><h2 class="big">');if(i<0)return h;
     if(s.lite){var a=h.indexOf('<div class="sug">'),b=a<0?-1:h.indexOf('</div>',h.indexOf('</span>',a));if(a>=0&&b>0)h=h.slice(0,a)+'<div class="sug"><b>Dia mais pesado</b><span class="why">Sem carga sugerida hoje. Use o peso que estiver bom para você.</span></div>'+h.slice(b+6)}
     i=h.indexOf('<div class="card"><div class="pad"><h2 class="big">');
-    return h.slice(0,i)+liteBox()+h.slice(i);
+    return h+liteBox();
   }catch(e){return h}
 };
 function cyCard(){
@@ -2828,6 +2828,52 @@ fatClick=function(a,b){
   if(a==='ddel'){S.diary[d]=(S.diary[d]||[]).filter(function(x){return x.id!==b.dataset.id});if(!S.diary[d].length)delete S.diary[d];saveDiary();render();return true}
   if(a==='dpredel'){S.dpre.splice(+b.dataset.i,1);saveDpre();render();return true}
   return _fc33(a,b);
+};
+/* ---- add34: séries compactas: uma linha por série (carga, reps, séries, ✓ concluir, + outra série) ---- */
+(function(){var st=document.createElement('style');st.textContent=
+'#root .bkh,#root .bkr{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) 92px 40px 40px;gap:6px;align-items:center}'+
+'#root .bkh{font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);font-weight:600;margin:10px 0 4px;text-align:center}'+
+'#root .bkh span:nth-child(n+4){visibility:hidden}'+
+'#root .bkr.blk{margin:4px 0;padding:0;border:0;border-radius:0;background:none;gap:6px}#root .bkr.done input{opacity:.6}'+
+'#root .bkr input{height:40px;min-height:0;font-size:16px;font-weight:600;text-align:center;padding:0 4px;width:100%;border-radius:10px}'+
+'#root .bkr .stp{display:grid;grid-template-columns:28px 1fr 28px;min-height:0;height:40px;border-radius:10px}'+
+'#root .bkr .stp button{min-height:0;height:40px;font-size:17px}#root .bkr .stp b{font-size:15px}'+
+'#root .bkc,#root .bkp{height:40px;min-height:0;width:40px;padding:0;border-radius:10px;font-size:19px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center}'+
+'#root .bkc{border:1.5px solid var(--line);background:transparent;color:var(--muted)}#root .bkc.on{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}'+
+'#root .bkp{border:1.5px dashed var(--accent);background:transparent;color:var(--accent);font-size:22px}'+
+'#root .bkt{display:flex;justify-content:space-between;align-items:center;font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);font-weight:600;margin:8px 0 0;min-height:20px}'+
+'#root [data-act=lite]{min-height:36px;font-size:13px;padding:6px 10px}#root .bkt button{width:28px;height:28px;min-height:0;padding:0;border:0;background:transparent;color:var(--muted);font-size:16px}';
+document.head.appendChild(st)})();
+blocksHtml=function(x,en,plan,last){
+  var bl=blocksOf(x,en,last),firstW=-1,h=pastBanner()+careNote(x),side=plan.side?' por lado':'';
+  bl.forEach(function(q,i){if(!q.warm&&firstW<0)firstW=i});
+  h+='<div class="bkh"><span class="hc">Carga</span><span>Reps'+(side?' / lado':'')+'</span><span>Séries</span><span></span><span></span></div>';
+  bl.forEach(function(b,i){
+    var n=Math.max(1,+b.n||1),tag=b.warm?'Aquecimento':(firstW>=0&&i>firstW?'Série diferente':''),last_=i===bl.length-1;
+    if(tag)h+='<div class="bkt"><span>'+tag+'</span>'+(bl.length>1?'<button data-act="blkrm" data-b="'+i+'" aria-label="Remover bloco">×</button>':'')+'</div>';
+    h+='<div class="bkr blk'+(b.d?' done':'')+'">'+
+      '<input data-f="bkg" data-b="'+i+'" inputmode="decimal" aria-label="Carga em kg" value="'+esc(b.kg)+'">'+
+      '<input data-f="brp" data-b="'+i+'" inputmode="numeric" aria-label="Repetições" value="'+esc(b.reps)+'">'+
+      '<span class="stp"><button data-act="blkn" data-b="'+i+'" data-d="-1" aria-label="Menos uma série">−</button><b>'+n+'</b><button data-act="blkn" data-b="'+i+'" data-d="1" aria-label="Mais uma série">+</button></span>'+
+      '<button class="bkc'+(b.d?' on':'')+'" data-act="blkok" data-b="'+i+'" aria-pressed="'+!!b.d+'" aria-label="'+(b.d?'Concluído, toque para desfazer':'Concluir '+n+(n===1?' série':' séries'))+'">✓</button>'+
+      (last_?'<button class="bkp" data-act="blkadd" aria-label="Adicionar outra série">+</button>':'<span></span>')+'</div>';
+  });
+  return h;
+};
+
+/* rodapé do ciclo: informação discreta no fim da tela, abaixo de Anterior/Próximo */
+(function(){var st=document.createElement('style');st.textContent='#root .cyfoot{margin:16px 4px 96px;font-size:12px;line-height:1.4;color:var(--muted);display:flex;flex-direction:column;gap:4px;align-items:flex-start}#root .cyfoot button{min-height:32px;font-size:12px;padding:4px 0;text-align:left;border:0;background:none;color:var(--accent);font-weight:600;cursor:pointer}';document.head.appendChild(st)})();
+liteBox=function(){
+  var s=S.ses[S.active.sid];if(!s)return '';
+  var ci=cyInfo(s.date||todayIso),h='<div class="cyfoot">';
+  if(ci)h+='<span>Ciclo: dia '+ci.day+' · '+esc(ci.ph)+' (estimativa)</span>';
+  if(!s.lite){
+    if(ci&&ci.day<=(+S.cy.per||5))h+='<span>Se hoje estiver com menos disposição ou força, pode baixar a carga.</span>';
+    var ht=cyHint();if(ht)h+='<span>'+esc(ht)+'</span>';
+  }
+  h+='<button data-act="lite" aria-pressed="'+(!!s.lite)+'">'+(s.lite?'Dia mais pesado: ligado (toque para desligar)':'Marcar hoje como dia mais pesado')+'</button>';
+  if(s.lite)h+='<span>Pode baixar a carga sem problema. Este treino não conta para a progressão: nas próximas vezes o app compara com seu último treino normal.</span>';
+  return h+'</div>';
 };
 
 render();
