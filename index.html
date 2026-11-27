@@ -2,7 +2,7 @@
 <html lang="pt-BR"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<script>window.APPV="27/11 17:48 UTC"</script>
+<script>window.APPV="27/11 17:49 UTC"</script>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/icon-32.png">
 <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
@@ -913,7 +913,7 @@ function libListHtml(){
 function viewLib(){
   var L=S.lib;if(L.open)return viewLibDetail(L.open);
   var cov=coverCounts(),covG=Object.keys(cov);
-  var h='<div class="card"><div class="pad"><div class="kicker">Mapa muscular</div><div class="sub">Toque num músculo para filtrar a lista. Ilustração simplificada dos principais grupos musculares, não é um atlas de anatomia.</div>'+mapSvg(L.mg,null,covG,true)+'<div class="sub">Rosa claro: músculos que suas fichas já trabalham. Cinza: sem exercício nas suas fichas.</div><div class="chips">'+MGS.filter(function(g){return g[0]!=='aerobio'}).map(function(g){var n=cov[g[0]]||0;return '<button class="chip'+(n?'':' dash')+'" data-act="fmg" data-v="'+g[0]+'" aria-pressed="'+(L.mg===g[0])+'">'+g[1]+' · '+(n?n+' exerc.':'nenhum')+'</button>'}).join('')+'</div></div></div>';
+  var h='<div class="card"><div class="pad"><div class="kicker">Mapa muscular</div>'+mapSvg(L.mg,null,covG,true)+'<div class="sub">Rosa claro: músculos que suas fichas já trabalham. Cinza: sem exercício nas suas fichas.</div><div class="chips">'+MGS.filter(function(g){return g[0]!=='aerobio'}).map(function(g){var n=cov[g[0]]||0;return '<button class="chip'+(n?'':' dash')+'" data-act="fmg" data-v="'+g[0]+'" aria-pressed="'+(L.mg===g[0])+'">'+g[1]+' · '+(n?n+' exerc.':'nenhum')+'</button>'}).join('')+'</div></div></div>';
   h+='<div class="card"><div class="pad"><label class="field">BUSCAR<input id="l-q" type="search" value="'+esc(L.q)+'" placeholder="Ex.: supino, rosca, leg press" autocomplete="off"></label>';
   h+='<div class="sub">Grupo muscular</div>'+chipRow([['','Todos']].concat(MGS.filter(function(g){return g[0]!=='aerobio'})),L.mg,'fmg');
   h+='<div class="sub">Equipamento</div>'+chipRow([['','Todos']].concat(EQK.map(function(k){return [k,EQN[k]]})),L.eq,'feq');
