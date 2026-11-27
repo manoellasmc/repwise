@@ -2,7 +2,7 @@
 <html lang="pt-BR"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<script>window.APPV="27/11 01:27 UTC"</script>
+<script>window.APPV="27/11 01:30 UTC"</script>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/icon-32.png">
 <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
@@ -2649,7 +2649,7 @@ fatClick=function(a,b){
   return _fc32(a,b);
 };
 /* ---- add33: Saúde → sub-aba "Diário calórico" (gasto × comida por dia, saldo de déficit) ---- */
-S.sau='corpo';S.dopen={};S.dadd=null;
+S.sau='diario';S.dopen={};S.dadd=null;
 S.diary=lsGet('pw2-diary')||{};S.dpre=lsGet('pw2-dpre')||[];
 function saveDiary(){lsSet('pw2-diary',S.diary)}
 function saveDpre(){lsSet('pw2-dpre',S.dpre)}
@@ -2690,7 +2690,7 @@ function dSaldoTxt(r){
   if(r.s<0)return '<b style="color:var(--bad)">+'+dFmt(Math.abs(v))+'</b>';
   return '<b>0</b>';
 }
-(function(){var st=document.createElement('style');st.textContent='.subt{display:flex;gap:8px;margin:0 4px 10px}.subt button{flex:1;min-height:44px;border-radius:12px;border:1px solid var(--line);background:transparent;color:var(--ink);font:inherit;font-weight:600}.subt button[aria-pressed=true]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}.dh,.drow{display:grid;grid-template-columns:1.2fr .95fr .95fr 1.25fr;gap:6px;align-items:center;width:100%;padding:11px 10px;border:0;border-bottom:1px solid var(--line);background:transparent;color:var(--ink);font:inherit;font-size:13px;text-align:left}.dh{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}.drow{min-height:48px;cursor:pointer}.drow .dd{font-weight:600}.drow .ch{color:var(--muted);margin-right:4px;display:inline-block;width:10px}.drow.open{background:var(--bg)}.dbody{padding:10px 12px 14px;border-bottom:1px solid var(--line);background:var(--bg)}.dbody h4{margin:10px 0 4px;font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}.dit{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px dashed var(--line);font-size:13px}.dit .nm{flex:1;min-width:0}.dit .qb{display:flex;align-items:center;gap:4px}.dit .qb button,.dit .x{min-width:32px;min-height:32px;border-radius:8px;border:1px solid var(--line);background:transparent;color:var(--ink);font:inherit}.dpres{display:flex;flex-direction:column;gap:6px;margin:6px 0}.dpres .pb{min-height:44px;text-align:left;border:1px solid var(--line);border-radius:12px;background:var(--surface);color:var(--ink);font:inherit;font-size:13px;padding:8px 12px}';document.head.appendChild(st)})();
+(function(){var st=document.createElement('style');st.textContent='.subt{display:flex;gap:8px;margin:0 4px 10px}.subt button{flex:1;min-height:44px;border-radius:12px;border:1px solid var(--line);background:transparent;color:var(--ink);font:inherit;font-weight:600}.subt button[aria-pressed=true]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}.dh,.drow{display:grid;grid-template-columns:1.6fr .9fr .9fr .85fr;gap:6px;align-items:center;width:100%;padding:11px 10px;border:0;border-bottom:1px solid var(--line);background:transparent;color:var(--ink);font:inherit;font-size:13px;text-align:left}.dh{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}.drow{min-height:48px;cursor:pointer}.drow .dd{font-weight:600}.drow .ch{color:var(--muted);margin-right:4px;display:inline-block;width:10px}.drow.open{background:var(--bg)}.dgrp.dmes{background:var(--surface);font-weight:700;font-size:14px;border-top:2px solid var(--line)}.dgrp.dsem{padding-left:16px;background:var(--bg)}.dday{padding-left:22px}.dgrp small{display:inline-block;margin-top:2px;font-size:11px}.dbody{padding:10px 12px 14px;border-bottom:1px solid var(--line);background:var(--bg)}.dbody h4{margin:10px 0 4px;font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}.dit{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px dashed var(--line);font-size:13px}.dit .nm{flex:1;min-width:0}.dit .qb{display:flex;align-items:center;gap:4px}.dit .qb button,.dit .x{min-width:32px;min-height:32px;border-radius:8px;border:1px solid var(--line);background:transparent;color:var(--ink);font:inherit}.dpres{display:flex;flex-direction:column;gap:6px;margin:6px 0}.dpres .pb{min-height:44px;text-align:left;border:1px solid var(--line);border-radius:12px;background:var(--surface);color:var(--ink);font:inherit;font-size:13px;padding:8px 12px}';document.head.appendChild(st)})();
 function dItems(d,slot){
   var h='',a=(S.diary[d]||[]).filter(function(it){return it.slot===slot});
   a.forEach(function(it){var q=it.q||1;
@@ -2729,23 +2729,51 @@ function dBody(d){
   else if(!e.n)h+='<div class="sub" style="margin-top:6px">Sem refeições registradas: o saldo do dia não é calculado.</div>';
   return h+'</div>';
 }
+S.dgrp={};
+function dMon(d){var x=fromIso(d),w=(x.getDay()+6)%7;return iso(new Date(x.getTime()-w*864e5))}
+function dGrpOpen(k){return S.dgrp[k]===undefined?(k==='m:'+todayIso.slice(0,7)||k==='w:'+dMon(todayIso)):!!S.dgrp[k]}
+function dAgg(days){
+  var o={n:0,out:0,eat:0,prot:0,s:0};
+  days.forEach(function(x){if(x.r){o.n++;o.out+=x.r.out;o.eat+=x.r.eat;o.prot+=x.e.prot}});
+  o.s=o.eat-o.out;return o;
+}
+function dSignTxt(v){var r=Math.round(v/5)*5;if(v<0)return '<b style="color:var(--good)">−'+dFmt(Math.abs(r))+'</b>';if(v>0)return '<b style="color:var(--bad)">+'+dFmt(r)+'</b>';return '<b>0</b>'}
+function dGrpRow(k,label,sub,days,cls){
+  var g=dAgg(days),open=dGrpOpen(k);
+  return '<button class="drow dgrp '+cls+(open?' open':'')+'" data-act="dgrp" data-k="'+k+'" aria-expanded="'+open+'"><span class="dd"><span class="ch">'+(open?'▾':'▸')+'</span>'+label+'<br><small class="sub" style="font-weight:400">'+(sub||'')+(g.n?g.n+' dia'+(g.n===1?'':'s')+' c/ registro':'sem registro')+'</small></span><span>'+(g.n?dFmt(g.out):'—')+'</span><span>'+(g.n?dFmt(g.eat):'—')+'</span><span>'+(g.n?dSignTxt(g.s):'—')+'</span></button>';
+}
+function dDayRow(x){
+  var open=!!S.dopen[x.d];
+  var h='<button class="drow dday'+(open?' open':'')+'" data-act="dopen" data-d="'+x.d+'" aria-expanded="'+open+'"><span class="dd"><span class="ch">'+(open?'▾':'▸')+'</span>'+dLab(x.d)+(x.d===todayIso?' <small style="color:var(--accent)">hoje</small>':'')+'</span><span>'+(x.o?dFmt(x.o.total):'—')+'</span><span>'+(x.e.n?dFmt(x.e.kcal):'—')+'</span><span>'+dSaldoTxt(x.r)+'</span></button>';
+  if(open)h+=dBody(x.d);
+  return h;
+}
 function viewDiario(){
-  var h='<div class="card"><div class="pad cmp"><div class="kicker">Diário calórico</div><div class="sub">Gasto = TMB × 1,2 + treinos do dia. Saldo = o que você comeu − o gasto: <b style=\"color:var(--good)\">− é déficit</b> e <b style=\"color:var(--bad)\">+ é a mais</b>. Toque num dia para abrir e registrar as refeições.</div>';
-  var rows=[],sum=0,n=0,ok=0,def=+S.fat.def||350;
-  for(var i=0;i<30;i++){var dt=new Date(fromIso(todayIso).getTime()-i*864e5),d=iso(dt),r=daySaldo(d);rows.push({d:d,r:r,o:dayOut(d),e:dayEaten(d)});if(i<7&&r){sum+=r.s;n++;if(r.s>=def)ok++}}
+  var h='<div class="card"><div class="pad cmp"><div class="kicker">Diário calórico</div><div class="sub">Gasto = TMB × 1,2 + treinos do dia. Saldo = o que você comeu − o gasto: <b style="color:var(--good)">− é déficit</b> e <b style="color:var(--bad)">+ é a mais</b>. Toque num dia para abrir e registrar as refeições. Semanas e meses mostram o total só dos dias com refeição registrada, e podem ser minimizados.</div>';
+  var days=[],sum=0,n=0,ok=0,def=+S.fat.def||350;
+  for(var i=0;i<92;i++){var d=iso(new Date(fromIso(todayIso).getTime()-i*864e5)),r=daySaldo(d);days.push({d:d,r:r,o:dayOut(d),e:dayEaten(d)});if(i<7&&r){sum+=r.s;n++;if(r.s>=def)ok++}}
   if(n)h+='<div class="stat"><div><b style="color:var('+(sum/n>=0?'--good':'--bad')+')">'+(sum/n>=0?'−':'+')+dFmt(Math.abs(sum/n))+'</b><span>saldo médio por dia (últimos 7, '+n+' com registro)</span></div><div><b>'+ok+' de '+n+'</b><span>dias com déficit na meta ('+def+')</span></div></div>';
   h+='</div>';
   h+='<div class="dtab" role="table"><div class="dh" role="row"><span>Dia</span><span>Gasto</span><span>Comeu</span><span>Saldo</span></div>';
-  rows.forEach(function(x){
-    var open=!!S.dopen[x.d];
-    h+='<button class="drow'+(open?' open':'')+'" data-act="dopen" data-d="'+x.d+'" aria-expanded="'+open+'"><span class="dd"><span class="ch">'+(open?'▾':'▸')+'</span>'+dLab(x.d)+(x.d===todayIso?' <small style="color:var(--accent)">hoje</small>':'')+'</span><span>'+(x.o?dFmt(x.o.total):'—')+'</span><span>'+(x.e.n?dFmt(x.e.kcal):'—')+'</span><span>'+dSaldoTxt(x.r)+'</span></button>';
-    if(open)h+=dBody(x.d);
+  var months=[],mm={};
+  days.forEach(function(x){var k=x.d.slice(0,7);if(!mm[k]){mm[k]={k:k,days:[]};months.push(mm[k])}mm[k].days.push(x)});
+  months.forEach(function(m){
+    var ml=fromIso(m.k+'-01').toLocaleDateString('pt-BR',{month:'long',year:'numeric'});
+    h+=dGrpRow('m:'+m.k,ml.charAt(0).toUpperCase()+ml.slice(1),'',m.days,'dmes');
+    if(!dGrpOpen('m:'+m.k))return;
+    var weeks=[],ww={};
+    m.days.forEach(function(x){var k=dMon(x.d);if(!ww[k]){ww[k]={k:k,days:[]};weeks.push(ww[k])}ww[k].days.push(x)});
+    weeks.forEach(function(w){
+      var a=w.days[w.days.length-1].d,b=w.days[0].d,sh=function(x){return x.slice(8,10)+'/'+x.slice(5,7)};
+      h+=dGrpRow('w:'+w.k,sh(a)+'–'+sh(b),'semana · ',w.days,'dsem');
+      if(dGrpOpen('w:'+w.k))w.days.forEach(function(x){h+=dDayRow(x)});
+    });
   });
   return h+'</div></div>';
 }
 var _vs33=viewSaude;
 viewSaude=function(){
-  var tabs='<div class="subt" role="tablist"><button role="tab" data-act="sau" data-v="corpo" aria-pressed="'+(S.sau==='corpo')+'">Corpo e metas</button><button role="tab" data-act="sau" data-v="diario" aria-pressed="'+(S.sau==='diario')+'">Diário calórico</button></div>';
+  var tabs='<div class="subt" role="tablist"><button role="tab" data-act="sau" data-v="diario" aria-pressed="'+(S.sau==='diario')+'">Diário calórico</button><button role="tab" data-act="sau" data-v="corpo" aria-pressed="'+(S.sau==='corpo')+'">Corpo e metas</button></div>';
   var k='<div class="kicker" style="margin:2px 4px 8px">Saúde</div>';
   if(S.sau==='diario')return k+tabs+viewDiario();
   var r=_vs33(),i=r.indexOf(k);
@@ -2755,6 +2783,7 @@ var _fc33=fatClick;
 fatClick=function(a,b){
   var d=b&&b.dataset&&b.dataset.d;
   if(a==='sau'){S.sau=b.dataset.v==='diario'?'diario':'corpo';S.dadd=null;render();window.scrollTo(0,0);return true}
+  if(a==='dgrp'){var kk=b.dataset.k;S.dgrp[kk]=!dGrpOpen(kk);render();return true}
   if(a==='dopen'){S.dopen[d]=!S.dopen[d];if(!S.dopen[d]&&S.dadd&&S.dadd.d===d)S.dadd=null;render();return true}
   if(a==='dadd'){S.dadd={d:d,s:b.dataset.s};render();return true}
   if(a==='dcancel'){S.dadd=null;render();return true}
