@@ -2,7 +2,7 @@
 <html lang="pt-BR"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<script>window.APPV="27/11 16:15 UTC"</script>
+<script>window.APPV="27/11 16:20 UTC"</script>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/icon-32.png">
 <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
@@ -2902,6 +2902,59 @@ viewActive=function(){
     return h;
   }catch(e){return h}
 };
+/* ---- add36: aba Hoje: treino (2/3) + cardio (1/3) lado a lado; ciclo vira rodapé ---- */
+(function(){var st=document.createElement('style');st.textContent=
+'#root .hojerow{display:flex;gap:10px;align-items:stretch;margin:0 0 12px}#root .hojerow>*{min-width:0}'+
+'#root .hojerow .cdcol{flex:1 1 0}#root .hojerow .trcol{flex:2 1 0}#root .hojerow .card{margin:0;height:100%}'+
+'#root .trcol .card.hero .pad{padding:14px}#root .trcol .card.hero .kicker{font-size:10px;line-height:1.35}'+
+'#root .trcol .card.hero h2{font-size:19px;line-height:1.15;margin:6px 0 10px}'+
+'#root .trcol .card.hero .hrow{gap:6px;flex-wrap:nowrap}#root .trcol .card.hero .btn{min-height:40px;height:40px;padding:0 10px;font-size:14px}#root .trcol .card.hero .btn.pri{flex:1 1 auto;min-width:0}#root .trcol .card.hero .btn.ic{flex:0 0 40px;min-width:40px;width:40px;padding:0}'+
+'#root .cdc .pad{padding:12px;display:flex;flex-direction:column;gap:8px;height:100%;box-sizing:border-box}'+
+'#root .cdc .kicker{font-size:10px}'+
+'#root .cdc select{width:100%;min-height:38px;font-size:16px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink);padding:0 6px;font-family:inherit}'+
+'#root .cdc .cdm{display:grid;grid-template-columns:26px 1fr 26px;align-items:center;text-align:center;border:1px solid var(--line);border-radius:10px;height:38px;overflow:hidden}'+
+'#root .cdc .cdm button{border:0;background:transparent;color:var(--ink);font-size:18px;height:38px;width:26px;min-height:0;padding:0;cursor:pointer}#root .cdc .cdm b{font-size:15px}#root .cdc .cdm small{font-size:10px;color:var(--muted);margin-left:2px}'+
+'#root .cdc .sub{font-size:11px;line-height:1.3}#root .cdc .btn{min-height:40px;padding:0 8px;font-size:14px;margin-top:auto}';
+document.head.appendChild(st)})();
+function dvEnd(h,i){var re=/<div\b|<\/div>/g,d=0,m;re.lastIndex=i;while((m=re.exec(h))){if(m[0]==='</div>'){d--;if(d===0)return re.lastIndex}else d++}return -1}
+function dvTake(h,marker){var i=h.indexOf(marker);if(i<0)return null;var e=dvEnd(h,i);if(e<0)return null;return {i:i,e:e,html:h.slice(i,e)}}
+function cardioMini(){
+  var kg=kgNow(),m=S.cardio.min,k=S.cardio.k||'bike',c=CARDIO.filter(function(q){return q.k===k})[0]||CARDIO[0],q=kg?c.kcal(m,kg):0;
+  var h='<div class="card cdc"><div class="pad"><div class="kicker">Cardio</div><select data-f="cdtype" aria-label="Tipo de cardio">';
+  CARDIO.forEach(function(x){h+='<option value="'+x.k+'"'+(x.k===c.k?' selected':'')+'>'+esc(x.label)+'</option>'});
+  h+='</select><div class="cdm"><button data-act="cdmin" data-v="-5" aria-label="Menos 5 minutos">−</button><span><b>'+m+'</b><small style="display:block;line-height:1;margin:0">min</small></span><button data-act="cdmin" data-v="5" aria-label="Mais 5 minutos">+</button></div>';
+  if(q>0)h+='<div class="sub"><b>≈ '+kcRound(q)+' kcal</b></div>';
+  if(c.k==='run'||c.k==='rope')h+='<div class="sub">Impacto no joelho: comece curto.</div>';
+  return h+'<button class="btn pri" data-act="cdgo" data-v="'+c.k+'">Iniciar</button></div></div>';
+}
+function cyHojeFoot(){
+  var ci=cyInfo(todayIso);if(!ci)return '';
+  var per=+S.cy.per||5,mens=ci.day<=per,hint=cyHint(),lite=litePreOn();
+  Object.keys(S.ses).forEach(function(id){if(S.ses[id].date===todayIso&&S.ses[id].lite)lite=true});
+  var h='<div class="cyfoot"><span>Ciclo: dia '+ci.day+' de '+ci.len+' · '+esc(ci.ph)+' (estimativa)</span>';
+  if(mens)h+='<span>Nesta fase é comum ter menos disposição e força. Se for o seu caso, tudo bem baixar a carga ou o ritmo hoje.</span>';
+  else if(hint)h+='<span>'+esc(hint)+'</span>';
+  if(mens||hint||lite)h+='<button data-act="litepre" aria-pressed="'+lite+'">'+(lite?'Hoje marcado como dia mais pesado (toque para desfazer)':'Marcar hoje como dia mais pesado')+'</button>';
+  if(lite)h+='<span>Sem carga sugerida hoje, e este treino não conta para a progressão.</span>';
+  return h+'</div>';
+}
+var _vh36=viewHoje;
+viewHoje=function(){
+  var h=_vh36();
+  try{
+    if((S.sel||todayIso)!==todayIso)return h;
+    var cy=dvTake(h,'<div class="card"><div class="pad cmp"><div class="kicker">Ciclo · dia');
+    if(cy)h=h.slice(0,cy.i)+h.slice(cy.e);
+    var cd=dvTake(h,'<div class="card"><div class="pad cmp"><div class="kicker">Cardio · treino separado');
+    if(cd)h=h.slice(0,cd.i)+h.slice(cd.e);
+    var hero=dvTake(h,'<div class="card hero">');
+    var row=hero?'<div class="hojerow"><div class="cdcol">'+cardioMini()+'</div><div class="trcol">'+hero.html+'</div></div>':'<div class="hojerow"><div class="cdcol" style="flex:1 1 100%">'+cardioMini()+'</div></div>';
+    if(hero)h=h.slice(0,hero.i)+row+h.slice(hero.e);
+    else h=h+row;
+    return h+cyHojeFoot();
+  }catch(e){return h}
+};
+document.addEventListener('change',function(ev){var t=ev.target;if(t&&t.dataset&&t.dataset.f==='cdtype'){S.cardio.k=t.value;try{lsSet('pw2-cardio',S.cardio)}catch(e){}render()}});
 
 render();
 
