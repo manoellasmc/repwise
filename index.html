@@ -2,7 +2,7 @@
 <html lang="pt-BR"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<script>window.APPV="27/11 17:51 UTC"</script>
+<script>window.APPV="27/11 17:55 UTC"</script>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/icon-32.png">
 <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
@@ -897,6 +897,7 @@ function mapSvg(sel,prim,sec,click,act){
 }
 
 /* biblioteca */
+function selRow(items,cur,f,label){return '<label class="field">'+label.toUpperCase()+'<select data-f="'+f+'" aria-label="'+label+'">'+items.map(function(c){return '<option value="'+esc(c[0])+'"'+(cur===c[0]?' selected':'')+'>'+esc(c[1])+'</option>'}).join('')+'</select></label>'}
 function chipRow(items,cur,act){return '<div class="chips" role="group">'+items.map(function(c){return '<button class="chip" data-act="'+act+'" data-v="'+c[0]+'" aria-pressed="'+(cur===c[0])+'">'+esc(c[1])+'</button>'}).join('')+'</div>'}
 function libRow(it){
   var cuid=(it.cu?' · meu exercício':'')+(it.why?' · '+it.why:'');
@@ -915,8 +916,8 @@ function viewLib(){
   var cov=coverCounts(),covG=Object.keys(cov);
   var h='<div class="card"><div class="pad"><div class="kicker">Mapa muscular</div>'+mapSvg(L.mg,null,covG,true)+'<div class="sub">Rosa claro: músculos que suas fichas já trabalham. Cinza: sem exercício nas suas fichas.</div><div class="mlist">'+MGS.filter(function(g){return g[0]!=='aerobio'}).map(function(g){var n=cov[g[0]]||0;return '<button class="chip mrow'+(n?'':' dash')+'" data-act="fmg" data-v="'+g[0]+'" aria-pressed="'+(L.mg===g[0])+'"><b>'+g[1]+'</b><span class="sp"> · </span><span class="mc">'+(n?n+' exerc.':'nenhum')+'</span></button>'}).join('')+'</div></div></div>';
   h+='<div class="card"><div class="pad"><label class="field">BUSCAR<input id="l-q" type="search" value="'+esc(L.q)+'" placeholder="Ex.: supino, rosca, leg press" autocomplete="off"></label>';
-  h+='<div class="sub">Grupo muscular</div>'+chipRow([['','Todos']].concat(MGS.filter(function(g){return g[0]!=='aerobio'})),L.mg,'fmg');
-  h+='<div class="sub">Equipamento</div>'+chipRow([['','Todos']].concat(EQK.map(function(k){return [k,EQN[k]]})),L.eq,'feq');
+  h+=selRow([['','Todos']].concat(MGS.filter(function(g){return g[0]!=='aerobio'})),L.mg,'fmgsel','Grupo muscular');
+  h+=selRow([['','Todos']].concat(EQK.map(function(k){return [k,EQN[k]]})),L.eq,'feqsel','Equipamento');
   h+='<div class="acts"><button class="chip" data-act="fonly" aria-pressed="'+L.only+'">Só equipamentos do meu perfil</button><button class="chip" data-act="fmine" aria-pressed="'+L.mine+'">Meus exercícios</button></div></div></div>';
   h+='<div id="liblist">'+libListHtml()+'</div>';
   if(L.form)h+=custForm();else h+='<div class="pad"><button class="btn block" data-act="custnew">+ Cadastrar meu exercício</button></div>';
@@ -3047,6 +3048,7 @@ fatClick=function(a,b){
 };
 (function(){var st=document.createElement('style');st.textContent='#root .top>div:first-child{flex:1 1 auto;min-width:0}#root .top .kicker{white-space:nowrap;font-size:11px;letter-spacing:.05em}#root .top .wk{flex:0 0 auto;max-width:34%}';document.head.appendChild(st)})();
 (function(){var st=document.createElement('style');st.textContent='#root .mlist{display:flex;flex-direction:column;margin-top:8px}#root .mlist .mrow{display:flex;justify-content:space-between;align-items:center;width:100%;min-height:44px;padding:0 4px;border:0;border-radius:0;border-top:1px solid var(--line);background:transparent;color:var(--ink);font:inherit;font-size:15px;cursor:pointer;text-align:left}#root .mlist .mrow:first-child{border-top:0}#root .mlist .mrow b{font-weight:600}#root .mlist .mrow .sp{display:none}#root .mlist .mrow .mc{color:var(--muted);font-size:13px}#root .mlist .mrow.dash{border-style:solid;opacity:.7}#root .mlist .mrow[aria-pressed=true]{background:var(--accent);color:#fff;border-radius:10px;padding:0 10px}#root .mlist .mrow[aria-pressed=true] .mc{color:#fff}';document.head.appendChild(st)})();
+document.addEventListener('change',function(ev){var t=ev.target;if(!t||!t.dataset)return;var f=t.dataset.f;if(f==='fmgsel'){S.lib.mg=t.value;S.lib.n=30;render()}else if(f==='feqsel'){S.lib.eq=t.value;S.lib.n=30;render()}});
 
 render();
 
