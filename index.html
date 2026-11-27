@@ -2,7 +2,7 @@
 <html lang="pt-BR"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<script>window.APPV="27/11 16:32 UTC"</script>
+<script>window.APPV="27/11 17:10 UTC"</script>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/icon-32.png">
 <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
@@ -2978,6 +2978,44 @@ viewHoje=function(){
     else h=h+row;
     return h+cyHojeFoot()+(S.cdpick?cdSheet():'');
   }catch(e){return h}
+};
+/* ---- add37: detalhe do treino (Hoje, dia passado) mais limpo, lista de exercícios recolhida ---- */
+S.sdo=S.sdo||{};
+(function(){var st=document.createElement('style');st.textContent=
+'#root .sdc .pad{padding:14px}#root .sdc h2{font-size:20px;line-height:1.2;margin:0 0 4px}'+
+'#root .sdc .sdm{font-size:12px;line-height:1.4;color:var(--muted);margin:0}'+
+'#root .sdc .sdtag{display:inline-block;font-size:11px;color:var(--accent);border:1px solid var(--accent);border-radius:999px;padding:1px 8px;margin:0 0 6px}'+
+'#root .sdc .sdt{display:flex;justify-content:space-between;align-items:center;width:100%;margin-top:10px;min-height:40px;padding:0 12px;border-radius:10px;border:1px solid var(--line);background:transparent;color:var(--ink);font:inherit;font-size:14px;cursor:pointer}'+
+'#root .sdc .sdl{list-style:none;margin:6px 0 0;padding:0}#root .sdc .sdl li{display:flex;justify-content:space-between;gap:10px;align-items:baseline;padding:7px 0;border-top:1px solid var(--line);font-size:13px}'+
+'#root .sdc .sdl li:first-child{border-top:0}#root .sdc .sdl b{font-weight:600;min-width:0}#root .sdc .sdl span{color:var(--muted);text-align:right;flex:0 0 auto;max-width:48%}'+
+'#root .sdc .sdl .sdn{display:block;font-size:12px;color:var(--muted);font-weight:400}'+
+'#root .sdc .sda{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}#root .sdc .sda .btn{min-height:34px;font-size:13px;padding:0 10px}';
+document.head.appendChild(st)})();
+function sdSets(ds){
+  if(!ds.length)return '';
+  var k0=ds[0].kg,same=ds.every(function(q){return q.kg===k0}),r0=ds[0].reps,sr=ds.every(function(q){return q.reps===r0});
+  if(same&&sr)return ds.length+' × '+r0+' · '+nf(k0)+' kg';
+  if(same)return nf(k0)+' kg · '+ds.map(function(q){return q.reps}).join(' / ');
+  return ds.map(function(q){return nf(q.kg)+'×'+q.reps}).join(' · ');
+}
+sessDetail=function(id){
+  var s=S.ses[id],en=s.entries||{},sets=0,rows='',n=0;
+  Object.keys(en).forEach(function(k){sets+=doneSets(en[k]).length});
+  Object.keys(en).forEach(function(k){var e=en[k],ds=doneSets(e);if(!ds.length&&!e.cd)return;n++;
+    rows+='<li><div><b>'+esc(e.n)+'</b>'+(e.note?'<span class="sdn" style="text-align:left;max-width:none">“'+esc(e.note)+'”</span>':'')+cdEdBtn(id,k)+'</div><span>'+(ds.length?sdSets(ds):(e.min?esc(e.min)+' min':'concluído'))+'</span></li>'});
+  var kc='';try{var kg=kgNow(),f=sesFicha(s);if(kg&&f){var m=exKMap(f,s,kg),t=0;Object.keys(m).forEach(function(q){t+=m[q]});if(t>=3)kc=' · ≈ '+kcRound(t)+' kcal'}}catch(e){}
+  var op=!!S.sdo[id];
+  var h='<div class="card sdc"><div class="pad">'+(s.lite?'<span class="sdtag">Dia mais pesado · carga reduzida</span>':'')+
+   '<h2>'+esc(sesTitle(s))+'</h2><p class="sdm">'+sesDone(id)+' exerc. · '+sets+' séries · '+nf(sesVolume(id))+' kg'+kc+'</p>'+
+   '<button class="sdt" data-act="sdtog" data-id="'+id+'" aria-expanded="'+op+'"><span>'+(op?'Ocultar exercícios':'Ver exercícios ('+n+')')+'</span><span aria-hidden="true">'+(op?'▴':'▾')+'</span></button>'+
+   (op?'<ul class="sdl">'+rows+'</ul>':'')+
+   '<div class="sda"><button class="btn sm" data-act="seesum" data-id="'+id+'">Comparar</button><button class="btn sm" data-act="start" data-id="'+esc(s.fichaId)+'" data-date="'+s.date+'">Editar</button><button class="btn sm dng" data-act="delses" data-id="'+id+'">'+(S.confirm===id?'Confirmar exclusão':'Excluir')+'</button></div></div></div>';
+  return h;
+};
+var _fc37=fatClick;
+fatClick=function(a,b){
+  if(a==='sdtog'){var i=b.dataset.id;S.sdo[i]=!S.sdo[i];render();return true}
+  return _fc37(a,b);
 };
 
 render();
