@@ -2,7 +2,7 @@
 <html lang="pt-BR"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<script>window.APPV="27/11 16:20 UTC"</script>
+<script>window.APPV="27/11 16:23 UTC"</script>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/icon-32.png">
 <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
@@ -2941,6 +2941,10 @@ function cyHojeFoot(){
 var _vh36=viewHoje;
 viewHoje=function(){
   var h=_vh36();
+  try{
+    var ul=dvTake(h,'<div class="card"><div class="pad"><div class="kicker">Último treino');
+    if(ul)h=h.slice(0,ul.i)+h.slice(ul.e);
+  }catch(e){}
   try{
     if((S.sel||todayIso)!==todayIso)return h;
     var cy=dvTake(h,'<div class="card"><div class="pad cmp"><div class="kicker">Ciclo · dia');
