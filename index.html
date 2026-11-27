@@ -2,7 +2,7 @@
 <html lang="pt-BR"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<script>window.APPV="27/11 01:30 UTC"</script>
+<script>window.APPV="27/11 01:34 UTC"</script>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/icon-32.png">
 <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
@@ -2729,7 +2729,7 @@ function dBody(d){
   else if(!e.n)h+='<div class="sub" style="margin-top:6px">Sem refeições registradas: o saldo do dia não é calculado.</div>';
   return h+'</div>';
 }
-S.dgrp={};
+S.dgrp={};var DSTART='2026-11-23';
 function dMon(d){var x=fromIso(d),w=(x.getDay()+6)%7;return iso(new Date(x.getTime()-w*864e5))}
 function dGrpOpen(k){return S.dgrp[k]===undefined?(k==='m:'+todayIso.slice(0,7)||k==='w:'+dMon(todayIso)):!!S.dgrp[k]}
 function dAgg(days){
@@ -2751,7 +2751,7 @@ function dDayRow(x){
 function viewDiario(){
   var h='<div class="card"><div class="pad cmp"><div class="kicker">Diário calórico</div><div class="sub">Gasto = TMB × 1,2 + treinos do dia. Saldo = o que você comeu − o gasto: <b style="color:var(--good)">− é déficit</b> e <b style="color:var(--bad)">+ é a mais</b>. Toque num dia para abrir e registrar as refeições. Semanas e meses mostram o total só dos dias com refeição registrada, e podem ser minimizados.</div>';
   var days=[],sum=0,n=0,ok=0,def=+S.fat.def||350;
-  for(var i=0;i<92;i++){var d=iso(new Date(fromIso(todayIso).getTime()-i*864e5)),r=daySaldo(d);days.push({d:d,r:r,o:dayOut(d),e:dayEaten(d)});if(i<7&&r){sum+=r.s;n++;if(r.s>=def)ok++}}
+  for(var i=0;i<400;i++){var d=iso(new Date(fromIso(todayIso).getTime()-i*864e5));if(d<DSTART)break;var r=daySaldo(d);days.push({d:d,r:r,o:dayOut(d),e:dayEaten(d)});if(i<7&&r){sum+=r.s;n++;if(r.s>=def)ok++}}
   if(n)h+='<div class="stat"><div><b style="color:var('+(sum/n>=0?'--good':'--bad')+')">'+(sum/n>=0?'−':'+')+dFmt(Math.abs(sum/n))+'</b><span>saldo médio por dia (últimos 7, '+n+' com registro)</span></div><div><b>'+ok+' de '+n+'</b><span>dias com déficit na meta ('+def+')</span></div></div>';
   h+='</div>';
   h+='<div class="dtab" role="table"><div class="dh" role="row"><span>Dia</span><span>Gasto</span><span>Comeu</span><span>Saldo</span></div>';
