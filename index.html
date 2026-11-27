@@ -2,7 +2,7 @@
 <html lang="pt-BR"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<script>window.APPV="27/11 16:09 UTC"</script>
+<script>window.APPV="27/11 16:12 UTC"</script>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/icon-32.png">
 <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
@@ -2874,6 +2874,23 @@ liteBox=function(){
   h+='<button data-act="lite" aria-pressed="'+(!!s.lite)+'">'+(s.lite?'Dia mais pesado: ligado (toque para desligar)':'Marcar hoje como dia mais pesado')+'</button>';
   if(s.lite)h+='<span>Pode baixar a carga sem problema. Este treino não conta para a progressão: nas próximas vezes o app compara com seu último treino normal.</span>';
   return h+'</div>';
+};
+/* ---- add35: título do exercício em uma linha: ▶ (como fazer) + nome + músculo à direita ---- */
+(function(){var st=document.createElement('style');st.textContent=
+'#root .ttl{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 6px}'+
+'#root .ttl h2.big{font-size:22px;line-height:1.15;margin:0;flex:1 1 150px;min-width:0}'+
+'#root .ttl .mg{flex:0 0 auto;margin-left:auto}'+
+'#root .ttl .hw{flex:0 0 auto;width:36px;height:36px;min-height:0;padding:0 0 0 2px;border-radius:10px;border:1.5px solid var(--accent);background:transparent;color:var(--accent);font-size:13px;line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer}';
+document.head.appendChild(st)})();
+var _va35=viewActive;
+viewActive=function(){
+  var h=_va35();
+  try{
+    var re=/<h2 class="big">([^<]*)<\/h2>(?:<div>((?:<span class="mg">[^<]*<\/span>\s*)+)<\/div>)?(?:<div><button class="xlink" data-act="how" data-id="([^"]+)"[^>]*>[^<]*<\/button><\/div>)?/;
+    var m=re.exec(h);if(!m)return h;
+    var arrow=m[3]?'<button class="hw" data-act="how" data-id="'+m[3]+'" aria-label="Ver como fazer o exercício" title="Como fazer">▶</button>':'';
+    return h.replace(re,'<div class="ttl">'+arrow+'<h2 class="big">'+m[1]+'</h2>'+(m[2]||'')+'</div>');
+  }catch(e){return h}
 };
 
 render();
