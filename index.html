@@ -2,7 +2,7 @@
 <html lang="pt-BR"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<script>window.APPV="27/11 17:55 UTC"</script>
+<script>window.APPV="27/11 17:57 UTC"</script>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/icon-32.png">
 <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
@@ -3008,7 +3008,7 @@ sessDetail=function(id){
   var kc='';try{var kg=kgNow(),f=sesFicha(s);if(kg&&f){var m=exKMap(f,s,kg),t=0;Object.keys(m).forEach(function(q){t+=m[q]});if(t>=3)kc=' · ≈ '+kcRound(t)+' kcal'}}catch(e){}
   var op=!!S.sdo[id];
   var h='<div class="card sdc"><div class="pad">'+(s.lite?'<span class="sdtag">Dia mais pesado · carga reduzida</span>':'')+
-   '<h2>'+esc(sesTitle(s))+'</h2><p class="sdm">'+sesDone(id)+' exerc. · '+sets+' séries · '+nf(sesVolume(id))+' kg'+kc+'</p>'+
+   '<h2>'+esc(sesTitle(s))+'</h2><p class="sdm">'+(sesMin(s)?Math.round(sesMin(s))+' min · ':'')+sesDone(id)+' exerc. · '+sets+' séries · '+nf(sesVolume(id))+' kg'+kc+'</p>'+
    '<button class="sdt" data-act="sdtog" data-id="'+id+'" aria-expanded="'+op+'"><span>'+(op?'Ocultar exercícios':'Ver exercícios ('+n+')')+'</span><span aria-hidden="true">'+(op?'▴':'▾')+'</span></button>'+
    (op?'<ul class="sdl">'+rows+'</ul>':'')+
    '<div class="sda"><button class="btn sm" data-act="seesum" data-id="'+id+'">Comparar</button><span style="flex:1"></span><button class="btn sm ic" data-act="start" data-id="'+esc(s.fichaId)+'" data-date="'+s.date+'" aria-label="Continuar ou editar treino" title="Continuar ou editar"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16v4zM13.5 6.5l4 4"/></svg></button>'+(S.confirm===id?'<button class="btn sm dng" data-act="delses" data-id="'+id+'">Confirmar exclusão</button>':'<button class="btn sm dng ic" data-act="delses" data-id="'+id+'" aria-label="Excluir treino" title="Excluir treino">'+HIC.trash+'</button>')+'</div></div>';
@@ -3030,6 +3030,8 @@ viewSummary=function(){
   }catch(e){}
   return h;
 };
+
+hcCard=function(id){return sessDetail(id)};
 /* ---- add38: tema claro/escuro/automático (Perfil) ---- */
 S.theme=lsGet('pw2-theme')||'auto';
 function applyTheme(){try{var r=document.documentElement;if(S.theme==='light'||S.theme==='dark')r.setAttribute('data-theme',S.theme);else r.removeAttribute('data-theme')}catch(e){}}
