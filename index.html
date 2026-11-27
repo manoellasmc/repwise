@@ -2,7 +2,7 @@
 <html lang="pt-BR"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<script>window.APPV="27/11 17:27 UTC"</script>
+<script>window.APPV="27/11 17:30 UTC"</script>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/icon-32.png">
 <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
@@ -3045,6 +3045,7 @@ fatClick=function(a,b){
   if(a==='theme'){S.theme=b.dataset.v;lsSet('pw2-theme',S.theme);applyTheme();render();return true}
   return _fc38(a,b);
 };
+(function(){var st=document.createElement('style');st.textContent='#root .top>div:first-child{flex:1 1 auto;min-width:0}#root .top .kicker{white-space:nowrap;font-size:11px;letter-spacing:.05em}#root .top .wk{flex:0 0 auto;max-width:34%}';document.head.appendChild(st)})();
 
 render();
 
